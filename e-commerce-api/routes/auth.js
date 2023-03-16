@@ -10,9 +10,17 @@ router.put(
   "/signup",
   [
     body("email").isEmail().trim(),
-    body("password").isAlphanumeric().trim().isLength({ min: 8 }),
+    body("password")
+      .isAlphanumeric()
+      .trim()
+      .isLength({ min: 8 })
+      .withMessage("the password should be at least 8 digits"),
     body("name").isLength({ min: 4 }),
-    // body('phoneNumber').custom()
+    body("phone")
+      .isLength({ min: 10, max: 10 })
+      .withMessage("Phone number must be exactly 10 digits")
+      .matches(/^[0-9]+$/)
+      .withMessage("Phone number must only contain digits"),
   ],
   authControllers.signUp
 );
