@@ -201,6 +201,7 @@ exports.getForm = async (req, res, next) => {
   res.send(`<h2> Reset your password from this link  <h2/>
      <form method="post" action="http://localhost:3001/auth/reset/${token}">
        <input name="password">  </input>
+       <input name="confiremedPassword">  </input>
        <button type="submit"> reset <button>
      </form>
    `);
@@ -209,6 +210,22 @@ exports.getForm = async (req, res, next) => {
 exports.resetPassword = async (req, res, next) => {
   const token = req.params.token;
   const password = req.body.password;
+  const confiremedPassword = req.body.confiremedPassword;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("the input are invalid");
+    error.status = 422;
+    error.data = errors.array();
+    next(error);
+  }
+
+  if (password !== confiremedPassword) {
+    const error = new Error("the passwords are not matched");
+    error.status = 422;
+    next(error);
+  }
+
   try {
     const user = await User.findOne({ token: token });
     if (!user) {
