@@ -171,9 +171,10 @@ exports.tokenForgetPassword = async (req, res, next) => {
       to: user.email,
       from: "m.khelladi@esi-sba.dz",
       subject: "Reset Password",
-      html: `<h2> Reset your password from this link  <h2/>
-        <a href="http://localhost:3000/auth/reset/${token}"> Reset </a>
-        `,
+      html: `
+          <h2> Click this link to reset your password </h2>
+          <a href ="http://localhost:3001/auth/reset/form/${token}"> the Link </a>
+          `,
     });
     res.status(200).json({
       message: "the email for restpassword is delivreid",
@@ -186,6 +187,23 @@ exports.tokenForgetPassword = async (req, res, next) => {
     }
     next(err);
   }
+};
+
+exports.getForm = async (req, res, next) => {
+  const token = req.params.token;
+  const user = await User.findOne({ token: token });
+  if (!user) {
+    const error = new Error("no user found for this token");
+    error.status = 404;
+    throw error;
+  }
+
+  res.send(`<h2> Reset your password from this link  <h2/>
+     <form method="post" action="http://localhost:3001/auth/reset/${token}">
+       <input name="password">  </input>
+       <button type="submit"> reset <button>
+     </form>
+   `);
 };
 
 exports.resetPassword = async (req, res, next) => {

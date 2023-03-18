@@ -26,8 +26,9 @@ router.put(
 );
 router.post("/login", authControllers.login);
 router.get("/verify/:userId", authControllers.verifyEmail);
-router.post("/reset", authControllers.tokenForgetPassword);
+router.get("/reset/form/:token", authControllers.getForm);
 router.post("/reset/:token", authControllers.resetPassword);
+router.post("/reset", authControllers.tokenForgetPassword);
 router.get(
   "/google/callback",
   passport.authenticate("google"),
