@@ -16,58 +16,57 @@ const transport = nodemailer.createTransport(
 );
 
 exports.signUp = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("the input are invalid");
+    error.status = 422;
+    error.data = errors.array();
+    return next(error);
+  }
+
   const email = req.body.email;
   const name = req.body.name;
   const password = req.body.password;
   const confirmedPassword = req.body.confirmedPassword;
   const phone = req.body.phone;
   const address = req.body.address;
+  const image = req.file;
 
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = new Error("the input are invalid");
+  if (!image) {
+    const error = new Error("no image is attached");
     error.status = 422;
-    error.data = errors.array();
-    next(error);
+    return next(error);
+    // return res.status(422).json({
+    //   message: "no image is attached",
+    // });
   }
-
-  //const image = req.file;
-
-  // if (!image) {
-  //   const error = new Error("no image is attached");
-  //   error.status = 422;
-  //   throw error;
-  //   // return res.status(422).json({
-  //   //   message: "no image is attached",
-  //   // });
-  // }
 
   if (password !== confirmedPassword) {
     const error = new Error("the 2 password are not matched");
     error.status = 403;
-    next(error);
+    return next(error);
     // return res.status(403).json({
     //   message: "the 2 password are not matched",
     // });
   }
 
   try {
-    const user = await User.findOne({ email: email });
+    let user = await User.findOne({ email: email });
     if (user) {
       const error = new Error("the user is alerdy exists");
       error.status = 409;
-      next(error);
+      return next(error);
     }
     const hashedPassword = await bcrypt.hash(password, 12);
-    const user2 = new User({
+    user = new User({
       name: name,
       email: email,
       password: hashedPassword,
-      // imageUrl: "/" + image.path,
+      imageUrl: "/" + image.path,
       phoneNumber: phone,
       address: address,
     });
-    await user2.save();
+    await user.save();
 
     transport.sendMail({
       to: user.email,
