@@ -54,7 +54,8 @@ exports.signUp = async (req, res, next) => {
     let user = await User.findOne({ email: email });
     if (user) {
       const error = new Error("the user is alerdy exists");
-      throw error;
+      error.status = 409;
+      next(error);
     }
     const hashedPassword = await bcrypt.hash(password, 12);
     user = new User({
