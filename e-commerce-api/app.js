@@ -14,9 +14,18 @@ const userRoutes = require("./routes/user");
 
 const app = express();
 
-const fileStorage = multer.diskStorage({
+const fileStorageUsers = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "data/profileImages");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+
+const fileStorageProducts = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "data/productImages");
   },
   filename: (req, file, cb) => {
     cb(null, new Date().toISOString() + "-" + file.originalname);
@@ -42,12 +51,13 @@ const store = new MongoDBStore({
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(
-  multer({
-    fileFilter: fileFilter,
-    storage: fileStorage,
-  }).single("image")
-);
+// app.use(
+//   multer({
+//     fileFilter: fileFilter,
+//     storage: fileStorageUsers,
+//   }).single("image")
+// );
+
 //app.use("/images", express.static(path.join(__dirname, "images")));
 app.use((req, res, next) => {
   //CORS
@@ -64,6 +74,14 @@ app.use(
     store: store,
   })
 );
+
+// app.use(
+//   "/admin",
+//   multer({
+//     fileFilter: fileFilter,
+//     storage: fileStorageProducts,
+//   }).array("images", 5)
+// );
 
 app.use("/auth", authRoutes);
 app.use("/product", shopRoutes);

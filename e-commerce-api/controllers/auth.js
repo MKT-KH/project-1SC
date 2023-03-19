@@ -22,16 +22,6 @@ exports.signUp = async (req, res, next) => {
   const confirmedPassword = req.body.confirmedPassword;
   const phone = req.body.phone;
   const address = req.body.address;
-  const image = req.file;
-
-  if (!image) {
-    const error = new Error("no image is attached");
-    error.status = 422;
-    next(error);
-    // return res.status(422).json({
-    //   message: "no image is attached",
-    // });
-  }
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -40,6 +30,17 @@ exports.signUp = async (req, res, next) => {
     error.data = errors.array();
     next(error);
   }
+
+  //const image = req.file;
+
+  // if (!image) {
+  //   const error = new Error("no image is attached");
+  //   error.status = 422;
+  //   throw error;
+  //   // return res.status(422).json({
+  //   //   message: "no image is attached",
+  //   // });
+  // }
 
   if (password !== confirmedPassword) {
     const error = new Error("the 2 password are not matched");
@@ -51,21 +52,22 @@ exports.signUp = async (req, res, next) => {
   }
 
   try {
-    let user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email });
     if (user) {
       const error = new Error("the user is alerdy exists");
-      throw error;
+      error.status = 409;
+      next(error);
     }
     const hashedPassword = await bcrypt.hash(password, 12);
-    user = new User({
+    const user2 = new User({
       name: name,
       email: email,
       password: hashedPassword,
-      imageUrl: "/" + image.path,
+      // imageUrl: "/" + image.path,
       phoneNumber: phone,
       address: address,
     });
-    await user.save();
+    await user2.save();
 
     transport.sendMail({
       to: user.email,
@@ -79,6 +81,7 @@ exports.signUp = async (req, res, next) => {
       message: "user created sucsuffyly without verification",
       userId: user._id,
       verify: user.verify,
+      user: user,
     });
   } catch (err) {
     if (!err.status) {
@@ -131,9 +134,13 @@ exports.login = async (req, res, next) => {
       error.status = 404;
       throw error;
     }
-    const token = jwt.sign({ email: email, userId: user._id }, "topsecertkey", {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { email: email, userId: user._id },
+      process.env.TOKEN_SECERT_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
     res.status(200).json({
       token: token,
       message: "the user is loged in",
@@ -195,13 +202,13 @@ exports.getForm = async (req, res, next) => {
   if (!user) {
     const error = new Error("no user found for this token");
     error.status = 404;
-    throw error;
+    next(error);
   }
 
   res.send(`<h2> Reset your password from this link  <h2/>
      <form method="post" action="http://localhost:3001/auth/reset/${token}">
-       <input name="password">  </input>
-       <input name="confiremedPassword">  </input>
+       <input type="password" name="password">  </input>
+       <input type="password" name="confiremedPassword">  </input>
        <button type="submit"> reset <button>
      </form>
    `);
