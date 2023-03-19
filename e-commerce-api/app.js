@@ -12,8 +12,26 @@ const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const userRoutes = require("./routes/user");
 const User = require("./models/user");
+const Product = require("./models/product");
 
 const app = express();
+
+const fileStorageProducts = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const name = req.body.name;
+    const product = await Product.findOne({ name: name });
+    if (product) {
+      const error = new Error("The product already exists");
+      error.status = 409;
+      cb(error);
+    } else {
+      cb(null, "data/productImages");
+    }
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
 
 const fileStorageUsers = multer.diskStorage({
   destination: async (req, file, cb) => {
@@ -26,15 +44,6 @@ const fileStorageUsers = multer.diskStorage({
     } else {
       cb(null, "data/profileImages");
     }
-  },
-  filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + "-" + file.originalname);
-  },
-});
-
-const fileStorageProducts = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "data/productImages");
   },
   filename: (req, file, cb) => {
     cb(null, new Date().toISOString() + "-" + file.originalname);
@@ -61,18 +70,18 @@ const store = new MongoDBStore({
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(
-  "/auth",
-  multer({
-    storage: fileStorageUsers,
-    fileFilter: fileFilter,
-  }).single("image")
-);
-app.use(
   "/admin",
   multer({
     fileFilter: fileFilter,
     storage: fileStorageProducts,
   }).array("images", 5)
+);
+app.use(
+  "/auth",
+  multer({
+    storage: fileStorageUsers,
+    fileFilter: fileFilter,
+  }).single("image")
 );
 
 //app.use("/images", express.static(path.join(__dirname, "images")));
