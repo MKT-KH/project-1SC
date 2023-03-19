@@ -29,11 +29,9 @@ const UserSchema = new Schema({
   },
   address: {
     type: String,
-    required: true,
   },
   phoneNumber: {
     type: String,
-    required: true,
   },
 });
 

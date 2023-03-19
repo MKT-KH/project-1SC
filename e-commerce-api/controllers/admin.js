@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const Product = require("../models/product");
-const User = require("../models/user");
 
 exports.createProduct = async (req, res, next) => {
   const name = req.body.name;
@@ -30,7 +29,6 @@ exports.createProduct = async (req, res, next) => {
       imageUrl: images,
       colors: colors,
     });
-
     await product.save();
     res.status(201).json({
       message: "product add succsufly",
@@ -44,7 +42,46 @@ exports.createProduct = async (req, res, next) => {
   }
 };
 
-exports.editProduct = (req, res, next) => {};
+exports.editProduct = async (req, res, next) => {
+  const productId = req.params.productId;
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no product found");
+      err.status = 409;
+      return next(err);
+    }
+
+    const name = req.body.name;
+    const price = req.body.price;
+    const type = req.body.type;
+    const quantity = req.body.quantity;
+    const colors = req.body.colors;
+    const images = req.files;
+
+    product.name = name;
+    product.price = price;
+    product.type = type;
+    product.quantity = quantity;
+    product.colors = colors;
+    if (images.length >= 1) {
+      product.imageUrl.forEach((path) => {
+        clearImage(path);
+      });
+      product.imageUrl = images.map((file) => file.path);
+    }
+    await product.save();
+    res.status(200).json({
+      message: "the product is update",
+      product: product,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
 
 exports.deleteProduct = async (req, res, next) => {
   const productId = req.params.productId;
