@@ -97,7 +97,7 @@ exports.verifyEmail = async (req, res, next) => {
     if (!user) {
       const error = new Error("no user found");
       error.status = 404;
-      throw error;
+      return next(error);
     }
     user.verify = true;
     await user.save();
@@ -121,17 +121,17 @@ exports.login = async (req, res, next) => {
     if (!user) {
       const error = new Error("no user found");
       error.status = 404;
-      throw error;
+      return next(error);
     }
     if (!user.verify) {
       const error = new Error("the account is not activated");
-      next(error);
+      return next(error);
     }
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
       const error = new Error("the password is incorecct");
       error.status = 404;
-      throw error;
+      return next(error);
     }
     const token = jwt.sign(
       { email: email, userId: user._id },
@@ -159,7 +159,7 @@ exports.tokenForgetPassword = async (req, res, next) => {
   try {
     crypto.randomBytes(32, async (err, buffer) => {
       if (err) {
-        console0.log(err);
+        console.log(err);
       }
       token = buffer.toString("hex");
     });
@@ -168,7 +168,7 @@ exports.tokenForgetPassword = async (req, res, next) => {
     if (!user) {
       const error = new Error("no user found");
       error.status = 404;
-      throw error;
+      return next(error);
     }
     user.token = token;
     user.expiresToken = Date.now() + 360000;
@@ -201,7 +201,7 @@ exports.getForm = async (req, res, next) => {
   if (!user) {
     const error = new Error("no user found for this token");
     error.status = 404;
-    next(error);
+    return next(error);
   }
 
   res.send(`<h2> Reset your password from this link  <h2/>
@@ -223,13 +223,13 @@ exports.resetPassword = async (req, res, next) => {
     const error = new Error("the input are invalid");
     error.status = 422;
     error.data = errors.array();
-    next(error);
+    return next(error);
   }
 
   if (password !== confiremedPassword) {
     const error = new Error("the passwords are not matched");
     error.status = 422;
-    next(error);
+    return next(error);
   }
 
   try {
