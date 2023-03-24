@@ -1,7 +1,7 @@
-const fs = require("fs");
-const path = require("path");
+const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator/check");
+const path = require("path");
 
 const User = require("../models/user");
 
@@ -18,32 +18,31 @@ exports.editUser = async (req, res, next) => {
     const error = new Error("the input are invalid");
     error.status = 422;
     error.data = errors.array();
-    next(error);
+    return next(error);
   }
 
   try {
     const user = await User.findById(req.userId);
-
     if (!user) {
       const error = new Error("no user found");
       error.status = 404;
-      throw error;
+      return next(error);
     }
-
     if (user._id.toString() !== req.userId.toString()) {
       const error = new Error("not authorized");
       error.status = 403;
-      next(error);
+      return next(error);
     }
-    const exsistUser = await User.findOne({ email: updatedEmail });
-    if (exsistUser) {
-      const error = new Error(
-        "the email is alerdy in use please take nother email"
-      );
-      error.status = 403;
-      throw error;
+    if (updatedEmail !== user.email) {
+      const exsistUser = await User.findOne({ email: updatedEmail });
+      if (exsistUser) {
+        const error = new Error(
+          "the email is alerdy in use please take nother email"
+        );
+        error.status = 403;
+        return next(error);
+      }
     }
-
     const hashedPassword = await bcrypt.hash(updatedPassword, 12);
     user.name = updatedName;
     user.email = updatedEmail;
@@ -53,22 +52,29 @@ exports.editUser = async (req, res, next) => {
     user.address = updatedAdress;
 
     if (image) {
-      clearImage(user.imageUrl);
-      user.imageUrl = image.path;
+      if (!user.imageUrl) {
+        user.imageUrl = image.path;
+      } else {
+        const url = user.imageUrl;
+        const publicId =
+          "profileImages/" + path.basename(url, path.extname(url));
+        cloudinary.uploader.destroy(publicId, function (error, result) {
+          if (error) {
+            console.log("Error:", error);
+          } else {
+            console.log("Result:", result);
+          }
+        });
+        user.imageUrl = image.path;
+      }
     }
-
     await user.save();
     res.status(200).json({
       message: "the user is upated",
-      userId: req.userId,
+      user: user,
     });
   } catch (err) {
     err.status = 500;
     next(err);
   }
-};
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
 };

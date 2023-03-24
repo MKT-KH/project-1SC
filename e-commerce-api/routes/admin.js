@@ -5,8 +5,18 @@ const router = express.Router();
 const isAdmin = require("../Middleware/is-admin");
 const isAuth = require("../Middleware/is-auth");
 const adminControllers = require("../controllers/admin");
+const multer = require("multer");
+const storage = require("../config/cloudinary");
 
-router.put("/product", isAuth, isAdmin, adminControllers.createProduct);
+const upload = multer({ storage: storage.storageProductImages });
+
+router.put(
+  "/product",
+  upload.array("images"),
+  isAuth,
+  isAdmin,
+  adminControllers.createProduct
+);
 router.patch(
   "/product/:productId",
   isAuth,

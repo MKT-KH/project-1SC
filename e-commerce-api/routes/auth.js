@@ -1,13 +1,18 @@
 const express = require("express");
 const { body } = require("express-validator/check");
+const multer = require("multer");
 
 const authControllers = require("../controllers/auth");
 const passport = require("../passport-setup");
+const storage = require("../config/cloudinary");
+
+const upload = multer({ storage: storage.storageProfileImages });
 
 const router = express.Router();
 
 router.put(
   "/signup",
+  upload.single("image"),
   [
     body("email").isEmail().trim(),
     body("password")

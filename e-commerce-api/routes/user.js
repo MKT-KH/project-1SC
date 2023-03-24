@@ -1,5 +1,10 @@
 const express = require("express");
 const { body } = require("express-validator/check");
+const multer = require("multer");
+
+const storage = require("../config/cloudinary");
+
+const upload = multer({ storage: storage.storageProfileImages });
 
 const router = express.Router();
 
@@ -8,6 +13,7 @@ const isAuth = require("../Middleware/is-auth");
 
 router.patch(
   "/edit",
+  upload.single("image"),
   [
     body("updatedEmail").isEmail().trim(),
     body("updatedPassword")

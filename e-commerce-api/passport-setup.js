@@ -12,19 +12,19 @@ passport.use(
       scope: ["email", "profile"],
     },
     (accessToken, refreshToken, profile, done) => {
+      console.log(profile);
       User.findOne({ email: profile.emails[0].value })
         .then((user) => {
           if (user) {
             return done(null, user);
           }
-
-          const user2 = new User({
+          const newUser = new User({
             name: profile.name.givenName,
             email: profile.emails[0].value,
             verify: true,
           });
-          return user2.save().then((result) => {
-            done(null, user2);
+          return newUser.save().then((result) => {
+            done(null, newUser);
           });
         })
         .catch((err) => {

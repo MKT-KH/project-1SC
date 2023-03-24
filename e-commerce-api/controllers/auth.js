@@ -30,24 +30,11 @@ exports.signUp = async (req, res, next) => {
   const confirmedPassword = req.body.confirmedPassword;
   const phone = req.body.phone;
   const address = req.body.address;
-  const image = req.file;
-
-  if (!image) {
-    const error = new Error("no image is attached");
-    error.status = 422;
-    return next(error);
-    // return res.status(422).json({
-    //   message: "no image is attached",
-    // });
-  }
 
   if (password !== confirmedPassword) {
     const error = new Error("the 2 password are not matched");
     error.status = 403;
     return next(error);
-    // return res.status(403).json({
-    //   message: "the 2 password are not matched",
-    // });
   }
 
   try {
@@ -62,7 +49,6 @@ exports.signUp = async (req, res, next) => {
       name: name,
       email: email,
       password: hashedPassword,
-      imageUrl: "/" + image.path,
       phoneNumber: phone,
       address: address,
     });
@@ -78,8 +64,6 @@ exports.signUp = async (req, res, next) => {
     });
     res.status(201).json({
       message: "user created sucsuffyly without verification",
-      userId: user._id,
-      verify: user.verify,
       user: user,
     });
   } catch (err) {
@@ -259,7 +243,12 @@ exports.signInGoogle = (req, res, next) => {
   const token = jwt.sign({ user: req.user }, process.env.TOKEN_SECERT_KEY, {
     expiresIn: "1h",
   });
-  res.json({
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+  });
+  res.status(200).json({
     message: "the token for authentification",
     token: token,
   });
