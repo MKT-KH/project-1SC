@@ -19,6 +19,7 @@ router.put(
 );
 router.patch(
   "/product/:productId",
+  upload.array("images"),
   isAuth,
   isAdmin,
   adminControllers.editProduct

@@ -36,7 +36,7 @@ app.use(
 );
 
 app.use("/auth", authRoutes);
-app.use("/product", shopRoutes);
+app.use("/products", shopRoutes);
 app.use("/admin", adminRoutes);
 app.use("/user", userRoutes);
 

@@ -1,5 +1,6 @@
-const fs = require("fs");
 const path = require("path");
+
+cloudinary = require("cloudinary");
 
 const Product = require("../models/product");
 
@@ -10,9 +11,6 @@ exports.createProduct = async (req, res, next) => {
   const quantity = req.body.quantity;
   const colors = req.body.colors;
   const images = req.files.map((file) => file.path);
-
-  //console.log(images);
-
   try {
     const exsitsProduct = await Product.findOne({ name: name });
     if (exsitsProduct) {
@@ -57,18 +55,30 @@ exports.editProduct = async (req, res, next) => {
     const type = req.body.type;
     const quantity = req.body.quantity;
     const colors = req.body.colors;
-    const images = req.files;
+    const images = req.files.map((file) => file.path);
 
     product.name = name;
     product.price = price;
     product.type = type;
     product.quantity = quantity;
     product.colors = colors;
+
     if (images.length >= 1) {
-      product.imageUrl.forEach((path) => {
-        clearImage(path);
+      const publicIds = product.imageUrl.map((publicId) => {
+        return (
+          "productImages/" + path.basename(publicId, path.extname(publicId))
+        );
       });
-      product.imageUrl = images.map((file) => file.path);
+      publicIds.forEach((publicId) => {
+        cloudinary.uploader.destroy(publicId, function (error, result) {
+          if (error) {
+            console.log("Error:", error);
+          } else {
+            console.log("Result:", result);
+          }
+        });
+      });
+      product.imageUrl = images;
     }
     await product.save();
     res.status(200).json({
@@ -92,8 +102,18 @@ exports.deleteProduct = async (req, res, next) => {
       error.status = 404;
       return next(error);
     }
-    product.imageUrl.forEach((path) => {
-      clearImage(path);
+    const publicIds = product.imageUrl.map((publicId) => {
+      return "productImages/" + path.basename(publicId, path.extname(publicId));
+    });
+
+    publicIds.forEach((publicId) => {
+      cloudinary.uploader.destroy(publicId, function (error, result) {
+        if (error) {
+          console.log("Error:", error);
+        } else {
+          console.log("Result:", result);
+        }
+      });
     });
     await Product.findByIdAndRemove(productId);
     res.status(200).json({
@@ -105,9 +125,4 @@ exports.deleteProduct = async (req, res, next) => {
     }
     next(err);
   }
-};
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
 };
