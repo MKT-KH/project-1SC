@@ -33,6 +33,25 @@ const UserSchema = new Schema({
   phoneNumber: {
     type: String,
   },
+  cart: {
+    items: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+        },
+        totalePrice: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

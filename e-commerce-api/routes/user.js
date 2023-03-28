@@ -31,4 +31,8 @@ router.patch(
   isAuth,
   userControllers.editUser
 );
+router.post("/cart/:productId", isAuth, userControllers.addToCart);
+//router.patch("/cart/:productId", isAuth, userControllers);
+router.delete("/cart", isAuth, userControllers.deleteCart);
+router.post("/order", isAuth, userControllers.Postorder);
 module.exports = router;

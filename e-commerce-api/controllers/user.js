@@ -4,6 +4,7 @@ const { validationResult } = require("express-validator/check");
 const path = require("path");
 
 const User = require("../models/user");
+const Product = require("../models/product");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -78,3 +79,57 @@ exports.editUser = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.addToCart = async (req, res, next) => {
+  const userId = req.userId;
+  const productId = req.params.productId;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    const err = new Error("no user found");
+    err.status = 404;
+    return next(err);
+  }
+  const product = await Product.findById(productId);
+  const cart = user.cart;
+
+  const exsitsProduct = cart.items.findIndex((item) => {
+    return item.productId.toString() === productId;
+  });
+  console.log(exsitsProduct);
+  if (exsitsProduct !== -1) {
+    cart.items[exsitsProduct].quantity += 1;
+    cart.items[exsitsProduct].totalePrice =
+      cart.items[exsitsProduct].totalePrice +
+      product.price * cart.items[exsitsProduct].quantity;
+  } else {
+    const newItem = {
+      productId: productId,
+      quantity: 1,
+      totalePrice: product.price,
+    };
+    cart.items.push(newItem);
+  }
+  await user.save();
+  res.status(200).json({
+    message: "add to cart succsuflyy",
+    cart: user.cart,
+  });
+};
+
+exports.deleteCart = async (req, res, next) => {
+  const userId = req.userId;
+  const user = await User.findById(userId);
+  if (!user) {
+    const err = new Error("no user found");
+    err.status = 404;
+    return next(err);
+  }
+  user.cart = {};
+  await user.save();
+  res.status(200).json({
+    message: "cart deleted",
+    cart: user.cart,
+  });
+};
+exports.Postorder = (req, res, next) => {};
