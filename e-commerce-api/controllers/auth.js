@@ -56,7 +56,7 @@ exports.signUp = async (req, res, next) => {
 
     transport.sendMail({
       to: user.email,
-      from: "m.khelladi@esi-sba.dz",
+      from: process.env.SENDER_EMAIL,
       subject: "Create account succsufuly",
       html: `<h2> verify that you create account by click this link <h2/>
             <a href="http://localhost:3001/auth/verify/${user._id}"> Verify </a>
@@ -159,7 +159,7 @@ exports.tokenForgetPassword = async (req, res, next) => {
     await user.save();
     transport.sendMail({
       to: user.email,
-      from: "m.khelladi@esi-sba.dz",
+      from: process.env.SENDER_EMAIL,
       subject: "Reset Password",
       html: `
           <h2> Click this link to reset your password </h2>

@@ -20,12 +20,6 @@ const ProductSchema = new Schema({
     type: String,
     required: true,
   },
-  colors: [
-    {
-      type: String,
-      required: true,
-    },
-  ],
   quantity: {
     type: Number,
     required: true,
