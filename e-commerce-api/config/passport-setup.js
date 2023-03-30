@@ -1,7 +1,7 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
-const User = require("./models/user");
+const User = require("../models/user");
 
 passport.use(
   new GoogleStrategy(
@@ -12,7 +12,7 @@ passport.use(
       scope: ["email", "profile"],
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log(profile);
+      //console.log(profile);
       User.findOne({ email: profile.emails[0].value })
         .then((user) => {
           if (user) {
