@@ -96,7 +96,7 @@ exports.addToCart = async (req, res, next) => {
   const exsitsProduct = cart.items.findIndex((item) => {
     return item.productId.toString() === productId;
   });
-  console.log(exsitsProduct);
+  //console.log(exsitsProduct);
   if (exsitsProduct !== -1) {
     cart.items[exsitsProduct].quantity += 1;
     cart.items[exsitsProduct].totalePrice =
@@ -132,4 +132,34 @@ exports.deleteCart = async (req, res, next) => {
     cart: user.cart,
   });
 };
+
+exports.deleteFromCart = async (req, res, next) => {
+  const productId = req.params.productId;
+  const product = await Product.findById(productId);
+  if (!product) {
+    const err = new Error("no product found");
+    err.status = 404;
+    return next(err);
+  }
+  const userId = req.userId;
+  const user = await User.findById(userId);
+  cart = user.cart;
+  const exsistsProductInCart = cart.items.findIndex((item) => {
+    return item.productId.toString() === productId;
+  });
+  //console.log(exsistsProductInCart);
+  if (exsistsProductInCart === -1) {
+    const err = new Error("no product found in the cart");
+    err.status = 404;
+    return next(err);
+  } else {
+    cart.items.splice(exsistsProductInCart, 1);
+    await user.save();
+  }
+  res.status(200).json({
+    message: "the product is deleted from cart",
+    cart: user.cart,
+  });
+};
+
 exports.Postorder = (req, res, next) => {};

@@ -62,6 +62,71 @@ exports.signUp = async (req, res, next) => {
             <a href="http://localhost:3001/auth/verify/${user._id}"> Verify </a>
             `,
     });
+    // transport.sendMail({
+    //   to: user.email,
+    //   from: process.env.SENDER_EMAIL,
+    //   subject: "Please Verify Your Account",
+    //   html: `
+    //     <html>
+    //       <head>
+    //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //         <style>
+    //           /* Add your styles here */
+    //           body {
+    //             background-color: #f6f6f6;
+    //             font-family: Arial, sans-serif;
+    //             font-size: 16px;
+    //             line-height: 1.4;
+    //             color: #444444;
+    //             margin: 0;
+    //             padding: 0;
+    //           }
+    //           .container {
+    //             max-width: 600px;
+    //             margin: 0 auto;
+    //             padding: 20px;
+    //             background-color: #ffffff;
+    //           }
+    //           h1 {
+    //             color: #333333;
+    //             font-size: 28px;
+    //             font-weight: bold;
+    //             margin-top: 0;
+    //             margin-bottom: 20px;
+    //           }
+    //           p {
+    //             margin-bottom: 20px;
+    //           }
+    //           .center {
+    //             text-align: center;
+    //           }
+    //           a {
+    //             display: inline-block;
+    //             background-color: #007bff;
+    //             color: #ffffff;
+    //             font-size: 16px;
+    //             font-weight: bold;
+    //             text-decoration: none;
+    //             padding: 12px 24px;
+    //             border-radius: 4px;
+    //           }
+    //           a:hover {
+    //             background-color: #0062cc;
+    //           }
+    //         </style>
+    //       </head>
+    //       <body>
+    //         <div class="container">
+    //           <h1>Verify Your Account</h1>
+    //           <p>Thank you for signing up! To activate your account and start using our services, please click the button below to verify your email address.</p>
+    //           <p class="center"><a href="http://localhost:3001/auth/verify/${user._id}">Verify Account</a></p>
+    //           <p>If you didn't create an account with us, please ignore this message.</p>
+    //         </div>
+    //       </body>
+    //     </html>
+    //   `,
+    // });
+
     res.status(201).json({
       message: "user created sucsuffyly without verification",
       user: user,

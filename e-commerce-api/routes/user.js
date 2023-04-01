@@ -32,6 +32,7 @@ router.patch(
   userControllers.editUser
 );
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
+router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
 //router.patch("/cart/:productId", isAuth, userControllers);
 router.delete("/cart", isAuth, userControllers.deleteCart);
 router.post("/order", isAuth, userControllers.Postorder);
