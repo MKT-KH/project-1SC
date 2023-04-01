@@ -9,7 +9,7 @@ const upload = multer({ storage: storage.storageProfileImages });
 const router = express.Router();
 
 const userControllers = require("../controllers/user");
-const isAuth = require("../Middleware/is-auth");
+const isAuth = require("../middleware/is-auth");
 
 router.patch(
   "/edit",

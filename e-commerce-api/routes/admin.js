@@ -2,8 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
-const isAdmin = require("../Middleware/is-admin");
-const isAuth = require("../Middleware/is-auth");
+const isAdmin = require("../middleware/is-admin");
+const isAuth = require("../middleware/is-auth");
 const adminControllers = require("../controllers/admin");
 const multer = require("multer");
 const storage = require("../config/cloudinary");
