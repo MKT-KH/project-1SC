@@ -5,6 +5,7 @@ const path = require("path");
 
 const User = require("../models/user");
 const Product = require("../models/product");
+const Order = require("../models/order");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -162,4 +163,57 @@ exports.deleteFromCart = async (req, res, next) => {
   });
 };
 
-exports.Postorder = (req, res, next) => {};
+exports.postorder = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+
+    const cart = user.cart;
+    const products = cart.items.map((item) => {
+      return { productId: item.productId, quantity: item.quantity };
+    });
+    const order = new Order({
+      products: products,
+      userId: userId,
+      orderDate: new Date(),
+    });
+    await order.save();
+    user.cart.items = [];
+    res.status(201).json({
+      message: "order create succsuflyy",
+      order: order,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.delteOrder = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const userId = req.userId;
+  try {
+    const order = await Order.findById(orderId);
+    if (order.userId.toString() !== userId) {
+      const err = new Error("not authorized to delte order");
+      err.status = 401;
+      return next(err);
+    }
+    await Order.findByIdAndRemove(orderId);
+    res.status(200).json({
+      message: "order delted",
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
