@@ -62,7 +62,7 @@ exports.signUp = async (req, res, next) => {
           <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-    
+
               body {
                 background-color: #f6f6f6;
                 font-family: Arial, sans-serif;
@@ -216,12 +216,24 @@ exports.tokenForgetPassword = async (req, res, next) => {
     transport.sendMail({
       to: user.email,
       from: process.env.SENDER_EMAIL,
-      subject: "Reset Password",
+      subject: "Password Reset - Techmate.store.dz",
       html: `
-          <h2> Click this link to reset your password </h2>
-          <a href ="http://localhost:3001/auth/reset/form/${token}"> the Link </a>
-          `,
+          <div style="background-color: #f5f5f5; padding: 40px; text-align: center;">
+              <h1 style="font-size: 24px;">Password Reset</h1>
+              <p style="font-size: 16px; line-height: 1.5;">Dear ${user.name},</p>
+              <p style="font-size: 16px; line-height: 1.5;">You recently requested to reset your password on Techmate.store.dz . Please click the button below to proceed:</p>
+              <table cellpadding="0" cellspacing="0" border="0" align="center">
+                  <tr>
+                      <td style="padding: 16px 32px; background-color: #2196f3; border-radius: 6px;">
+                          <a href="http://localhost:3001/auth/reset/form/${token}" style="color: #fff; text-decoration: none; font-size: 16px;">Reset Password</a>
+                      </td>
+                  </tr>
+              </table>
+              <p style="font-size: 16px; line-height: 1.5; margin-top: 40px;">If you did not request a password reset, please ignore this email.</p>
+          </div>
+      `,
     });
+
     res.status(200).json({
       message: "the email for restpassword is delivreid",
       userId: user._id,
@@ -243,14 +255,7 @@ exports.getForm = async (req, res, next) => {
     error.status = 404;
     return next(error);
   }
-
-  res.send(`<h2> Reset your password from this link  <h2/>
-     <form method="post" action="http://localhost:3001/auth/reset/${token}">
-       <input type="password" name="password">  </input>
-       <input type="password" name="confiremedPassword">  </input>
-       <button type="submit"> reset <button>
-     </form>
-   `);
+  res.render("resetPassword");
 };
 
 exports.resetPassword = async (req, res, next) => {
