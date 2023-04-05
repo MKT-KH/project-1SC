@@ -20,7 +20,6 @@ const orderSchema = new Schema({
     ref: "user",
   },
   Orderstatus: {
-    default: "pending",
     type: String,
     required: true,
   },
