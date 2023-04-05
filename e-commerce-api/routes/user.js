@@ -36,11 +36,4 @@ router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
 router.delete("/cart", isAuth, userControllers.deleteCart);
 router.post("/order", isAuth, userControllers.postorder);
 router.delete("/order/:orderId", isAuth, userControllers.delteOrder);
-router.post("/favorites/:productId", isAuth, userControllers.addToFavorites);
-router.get("/favorites", isAuth, userControllers.getFavorites);
-router.delete(
-  "/favorites/:productId",
-  isAuth,
-  userControllers.deleteFromFavorites
-);
 module.exports = router;
