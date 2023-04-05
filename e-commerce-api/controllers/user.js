@@ -126,7 +126,7 @@ exports.deleteCart = async (req, res, next) => {
     err.status = 404;
     return next(err);
   }
-  user.cart = {};
+  user.cart.items = [];
   await user.save();
   res.status(200).json({
     message: "cart deleted",
@@ -274,12 +274,11 @@ exports.addToFavorites = async (req, res, next) => {
       return next(err);
     }
     const existaProductInFavorites = user.favorites.items.findIndex((item) => {
-      console.log(item.productId.toString());
       return item.productId.toString() === productId;
     });
     if (existaProductInFavorites !== -1) {
       const err = new Error("the product is ealrdy exists in the favorite");
-      err.status = 401;
+      err.status = 409;
       return next(err);
     }
     user.favorites.items.push({ productId });
