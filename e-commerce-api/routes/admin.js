@@ -30,5 +30,6 @@ router.delete(
   isAdmin,
   adminControllers.deleteProduct
 );
+router.get("/orders", isAuth, isAdmin, adminControllers.getOrders);
 
 module.exports = router;

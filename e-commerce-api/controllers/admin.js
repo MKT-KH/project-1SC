@@ -3,6 +3,7 @@ const path = require("path");
 cloudinary = require("cloudinary");
 
 const Product = require("../models/product");
+const Order = require("../models/order");
 
 exports.createProduct = async (req, res, next) => {
   const name = req.body.name;
@@ -125,4 +126,17 @@ exports.deleteProduct = async (req, res, next) => {
     }
     next(err);
   }
+};
+
+exports.getOrders = async (req, res, next) => {
+  const orders = await Order.find();
+  if (!orders) {
+    const err = new Error("no orders found");
+    err.status = 404;
+    return next(err);
+  }
+  res.status(200).json({
+    message: "orders",
+    orders: orders,
+  });
 };

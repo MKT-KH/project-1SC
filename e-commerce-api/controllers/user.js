@@ -184,6 +184,8 @@ exports.postorder = async (req, res, next) => {
     });
     await order.save();
     user.cart.items = [];
+    user.orderId = order._id;
+    await user.save();
     res.status(201).json({
       message: "order create succsuflyy",
       order: order,
@@ -209,6 +211,128 @@ exports.delteOrder = async (req, res, next) => {
     await Order.findByIdAndRemove(orderId);
     res.status(200).json({
       message: "order delted",
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getFavorites = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId).populate(
+      "favorites.items.productId"
+    );
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId) {
+      const err = new Error("not auhtorized user");
+      err.status = 401;
+      return next(err);
+    }
+    if (!user.favorites) {
+      const err = new Error("no favorites for this user ");
+      err.status = 404;
+      return next(err);
+    }
+    res.status(200).json({
+      message: "fovorites",
+      favorites: user.favorites.items,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.addToFavorites = async (req, res, next) => {
+  const productId = req.params.productId;
+  const userId = req.userId;
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no product found");
+      err.status = 404;
+      return next(err);
+    }
+    const user = await User.findById(userId);
+    if (user._id.toString() !== userId) {
+      const err = new Error("not auhtorized user");
+      err.status = 401;
+      return next(err);
+    }
+    const existaProductInFavorites = user.favorites.items.findIndex((item) => {
+      console.log(item.productId.toString());
+      return item.productId.toString() === productId;
+    });
+    if (existaProductInFavorites !== -1) {
+      const err = new Error("the product is ealrdy exists in the favorite");
+      err.status = 401;
+      return next(err);
+    }
+    user.favorites.items.push({ productId });
+    await user.save();
+    const populateUser = await User.findById(userId).populate(
+      "favorites.items.productId"
+    );
+    res.status(200).json({
+      message: "add to fovorites succusuflyy",
+      favorites: populateUser.favorites.items,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.deleteFromFavorites = async (req, res, next) => {
+  const productId = req.params.productId;
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId) {
+      const err = new Error("not auhtorized user");
+      err.status = 401;
+      return next(err);
+    }
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no product found");
+      err.status = 404;
+      return next(err);
+    }
+    const existaProductInFavorites = user.favorites.items.findIndex((item) => {
+      return item.productId.toString() === productId;
+    });
+    if (existaProductInFavorites === -1) {
+      const err = new Error("the product is not in the favorites");
+      err.status = 404;
+      return next(err);
+    }
+    user.favorites.items.splice(existaProductInFavorites, 1);
+    await user.save();
+    const populateUser = await User.findById(userId).populate(
+      "favorites.items.productId"
+    );
+    res.status(200).json({
+      message: "the product is deleted from the favorites",
+      favorites: populateUser.favorites,
     });
   } catch (err) {
     if (!err.status) {
