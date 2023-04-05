@@ -33,6 +33,21 @@ const UserSchema = new Schema({
   phoneNumber: {
     type: String,
   },
+  orderId: {
+    type: Schema.Types.ObjectId,
+    ref: "Order",
+  },
+  favorites: {
+    items: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+      },
+    ],
+  },
   cart: {
     items: [
       {
