@@ -172,7 +172,6 @@ exports.postorder = async (req, res, next) => {
       err.status = 404;
       return next(err);
     }
-
     const cart = user.cart;
     const products = cart.items.map((item) => {
       return { productId: item.productId, quantity: item.quantity };
@@ -184,7 +183,7 @@ exports.postorder = async (req, res, next) => {
     });
     await order.save();
     user.cart.items = [];
-    user.orderId = order._id;
+    user.orderIds.items.push(order._id);
     await user.save();
     res.status(201).json({
       message: "order create succsuflyy",
