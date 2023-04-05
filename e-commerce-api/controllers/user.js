@@ -202,6 +202,11 @@ exports.delteOrder = async (req, res, next) => {
   const userId = req.userId;
   try {
     const order = await Order.findById(orderId);
+    if (!order) {
+      const err = new Error("no order found");
+      err.status = 404;
+      return next(err);
+    }
     if (order.userId.toString() !== userId) {
       const err = new Error("not authorized to delte order");
       err.status = 401;
