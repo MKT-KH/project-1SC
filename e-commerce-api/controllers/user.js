@@ -5,7 +5,6 @@ const path = require("path");
 
 const User = require("../models/user");
 const Product = require("../models/product");
-const Order = require("../models/order");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
