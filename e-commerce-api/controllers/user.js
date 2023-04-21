@@ -118,20 +118,49 @@ exports.addToCart = async (req, res, next) => {
   });
 };
 
+exports.getCart = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    const cart = user.cart.items;
+    res.status(200).json({
+      message: "cart",
+      cart: cart,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
 exports.deleteCart = async (req, res, next) => {
   const userId = req.userId;
-  const user = await User.findById(userId);
-  if (!user) {
-    const err = new Error("no user found");
-    err.status = 404;
-    return next(err);
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    user.cart.items = [];
+    await user.save();
+    res.status(200).json({
+      message: "cart deleted",
+      cart: user.cart,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
   }
-  user.cart.items = [];
-  await user.save();
-  res.status(200).json({
-    message: "cart deleted",
-    cart: user.cart,
-  });
 };
 
 exports.deleteFromCart = async (req, res, next) => {
