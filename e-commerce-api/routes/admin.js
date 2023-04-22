@@ -43,5 +43,11 @@ router.get(
   isAdmin,
   adminControllers.getStatisticsAboutOrders
 );
+router.patch(
+  "/order/status/:orderId",
+  isAuth,
+  isAdmin,
+  adminControllers.changeEtatOrder
+);
 
 module.exports = router;

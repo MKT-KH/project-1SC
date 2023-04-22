@@ -19,7 +19,7 @@ const orderSchema = new Schema({
     type: mongoose.Types.ObjectId,
     ref: "user",
   },
-  Orderstatus: {
+  orderstatus: {
     default: "pending",
     type: String,
     required: true,

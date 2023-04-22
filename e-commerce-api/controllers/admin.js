@@ -247,3 +247,15 @@ exports.getStatisticsAboutOrdersPrice = async (req, res, next) => {
     statistics,
   });
 };
+
+exports.changeEtatOrder = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const orderStatus = req.body.orderStatus;
+  const order = await Order.findById(orderId);
+  order.orderstatus = orderStatus;
+  await order.save();
+  res.status(200).json({
+    message: "the orderStatus is updated",
+    order: order,
+  });
+};
