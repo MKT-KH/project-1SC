@@ -31,5 +31,17 @@ router.delete(
   adminControllers.deleteProduct
 );
 router.get("/orders", isAuth, isAdmin, adminControllers.getOrders);
+router.get(
+  "/statistics/price",
+  isAuth,
+  isAdmin,
+  adminControllers.getStatisticsAboutOrdersPrice
+);
+router.get(
+  "/statistics",
+  isAuth,
+  isAdmin,
+  adminControllers.getStatisticsAboutOrders
+);
 
 module.exports = router;

@@ -23,7 +23,7 @@ const orderSchema = new Schema({
     default: "pending",
     type: String,
     required: true,
-  },
+  }, //pending cancelled , delivred
   orderDate: {
     type: Date,
     required: true,
