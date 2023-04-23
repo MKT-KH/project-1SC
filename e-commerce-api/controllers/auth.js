@@ -180,6 +180,11 @@ exports.login = async (req, res, next) => {
         expiresIn: "1h",
       }
     );
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
     res.status(200).json({
       token: token,
       message: "the user is loged in",
