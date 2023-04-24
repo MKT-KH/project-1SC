@@ -40,3 +40,13 @@ exports.getProduct = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getTypes = async (req, res, next) => {
+  try {
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};

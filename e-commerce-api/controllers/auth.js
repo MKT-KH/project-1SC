@@ -189,6 +189,7 @@ exports.login = async (req, res, next) => {
       token: token,
       message: "the user is loged in",
       userId: user.userId,
+      isAdmin: user.isAdmin,
     });
   } catch (err) {
     if (!err.status) {
