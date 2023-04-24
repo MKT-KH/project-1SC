@@ -43,6 +43,33 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getTypes = async (req, res, next) => {
   try {
+    const types = await Product.distinct("type");
+    const typesCount = [];
+
+    for (const type of types) {
+      const numberOfProducts = await Product.countDocuments({ type: type });
+      typesCount.push({ type: type, count: numberOfProducts });
+    }
+    // const typesCount = await Product.aggregate([
+    //   {
+    //     $group: {
+    //       _id: "$type",
+    //       count: { $sum: 1 },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       type: "$_id",
+    //       count: 1,
+    //     },
+    //   },
+    // ]);
+
+    res.status(200).json({
+      message: "the types and the number of the products in each type",
+      typesCount: typesCount,
+    });
   } catch (err) {
     if (!err.status) {
       err.status = 500;
