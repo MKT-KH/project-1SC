@@ -66,9 +66,12 @@ exports.getTypes = async (req, res, next) => {
     //   },
     // ]);
 
+    const totalProducts = await Product.find().countDocuments();
     res.status(200).json({
       message: "the types and the number of the products in each type",
       typesCount: typesCount,
+      message: "the total number of products",
+      totalProducts: totalProducts,
     });
   } catch (err) {
     if (!err.status) {

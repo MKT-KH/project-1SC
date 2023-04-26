@@ -275,6 +275,16 @@ exports.changeEtatOrder = async (req, res, next) => {
     const order = await Order.findById(orderId);
     order.orderstatus = orderStatus;
     await order.save();
+
+    const products = order.products;
+
+    if (order.orderstatus === "delivred") {
+      for (const product of products) {
+        const prod = await Product.findById(product.productId);
+        prod.quantity = prod.quantity - product.quantity;
+        await prod.save();
+      }
+    }
     res.status(200).json({
       message: "the orderStatus is updated",
       order: order,
@@ -285,4 +295,33 @@ exports.changeEtatOrder = async (req, res, next) => {
     }
     next(err);
   }
+};
+
+exports.getInformationABoutProducts = async (req, res, next) => {
+  let productsInfo = [];
+
+  const orders = await Order.find({ orderstatus: "delivred" });
+  const products = orders
+    .map((item) => {
+      return item.products;
+    })
+    .flat();
+
+  for (const product of products) {
+    const prod = await Product.findById(product.productId);
+    let productsSales = 0;
+    productsSales = productsSales + product.quantity;
+    let remainingProducts = 0;
+    remainingProducts = prod.quantity - product.quantity;
+    productsInfo.push({
+      productName: prod.name,
+      productsSales: productsSales,
+      remainingProducts: remainingProducts,
+    });
+  }
+
+  res.status(200).json({
+    message: "the products",
+    productsInfo: productsInfo,
+  });
 };

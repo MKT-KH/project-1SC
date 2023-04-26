@@ -32,13 +32,13 @@ router.delete(
 );
 router.get("/orders", isAuth, isAdmin, adminControllers.getOrders);
 router.get(
-  "/statistics/price",
+  "/money/statistics",
   isAuth,
   isAdmin,
   adminControllers.getStatisticsAboutOrdersPrice
 );
 router.get(
-  "/statistics",
+  "/orders/statistics",
   isAuth,
   isAdmin,
   adminControllers.getStatisticsAboutOrders
@@ -49,5 +49,10 @@ router.patch(
   isAdmin,
   adminControllers.changeEtatOrder
 );
-
+router.get(
+  "/products/statistics",
+  isAuth,
+  isAdmin,
+  adminControllers.getInformationABoutProducts
+);
 module.exports = router;
