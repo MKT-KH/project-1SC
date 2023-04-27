@@ -177,7 +177,7 @@ exports.login = async (req, res, next) => {
       { email: email, userId: user._id },
       process.env.TOKEN_SECERT_KEY,
       {
-        expiresIn: "1h",
+        expiresIn: "4h",
       }
     );
     res.cookie("authToken", token, {
