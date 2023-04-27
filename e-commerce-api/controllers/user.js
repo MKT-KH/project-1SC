@@ -84,47 +84,57 @@ exports.editUser = async (req, res, next) => {
 exports.addToCart = async (req, res, next) => {
   const userId = req.userId;
   const productId = req.params.productId;
-
-  const user = await User.findById(userId);
-  if (!user) {
-    const err = new Error("no user found");
-    err.status = 404;
-    return next(err);
-  }
-  const product = await Product.findById(productId);
-  const cart = user.cart;
-  const exsitsProduct = cart.items.findIndex((item) => {
-    return item.productId.toString() === productId;
-  });
-  //console.log(exsitsProduct);
-  if (exsitsProduct !== -1) {
-    if (product.quantity >= 1) {
-      cart.items[exsitsProduct].quantity += 1;
-      cart.items[exsitsProduct].totalePrice =
-        cart.items[exsitsProduct].totalePrice +
-        product.price * cart.items[exsitsProduct].quantity;
-    } else {
-      const error = new Error("you cant add the product the qty is not enough");
-      return next(error);
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
     }
-  } else {
-    if (product.quantity >= 1) {
-      const newItem = {
-        productId: productId,
-        quantity: 1,
-        totalePrice: product.price,
-      };
-      cart.items.push(newItem);
+    const product = await Product.findById(productId);
+    const cart = user.cart;
+    const exsitsProduct = cart.items.findIndex((item) => {
+      return item.productId.toString() === productId;
+    });
+    //console.log(exsitsProduct);
+    if (exsitsProduct !== -1) {
+      if (product.quantity >= 1) {
+        cart.items[exsitsProduct].quantity += 1;
+        cart.items[exsitsProduct].totalePrice =
+          cart.items[exsitsProduct].totalePrice +
+          product.price * cart.items[exsitsProduct].quantity;
+      } else {
+        const error = new Error(
+          "you cant add the product the qty is not enough"
+        );
+        return next(error);
+      }
     } else {
-      const error = new Error("you cant add the product the qty is not enough");
-      return next(error);
+      if (product.quantity >= 1) {
+        const newItem = {
+          productId: productId,
+          quantity: 1,
+          totalePrice: product.price,
+        };
+        cart.items.push(newItem);
+      } else {
+        const error = new Error(
+          "you cant add the product the qty is not enough"
+        );
+        return next(error);
+      }
     }
+    await user.save();
+    res.status(200).json({
+      message: "add to cart succsuflyy",
+      cart: user.cart,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
   }
-  await user.save();
-  res.status(200).json({
-    message: "add to cart succsuflyy",
-    cart: user.cart,
-  });
 };
 
 exports.getCart = async (req, res, next) => {
@@ -174,31 +184,38 @@ exports.deleteCart = async (req, res, next) => {
 
 exports.deleteFromCart = async (req, res, next) => {
   const productId = req.params.productId;
-  const product = await Product.findById(productId);
-  if (!product) {
-    const err = new Error("no product found");
-    err.status = 404;
-    return next(err);
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no product found");
+      err.status = 404;
+      return next(err);
+    }
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    cart = user.cart;
+    const exsistsProductInCart = cart.items.findIndex((item) => {
+      return item.productId.toString() === productId;
+    });
+    //console.log(exsistsProductInCart);
+    if (exsistsProductInCart === -1) {
+      const err = new Error("no product found in the cart");
+      err.status = 404;
+      return next(err);
+    } else {
+      cart.items.splice(exsistsProductInCart, 1);
+      await user.save();
+    }
+    res.status(200).json({
+      message: "the product is deleted from cart",
+      cart: user.cart,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
   }
-  const userId = req.userId;
-  const user = await User.findById(userId);
-  cart = user.cart;
-  const exsistsProductInCart = cart.items.findIndex((item) => {
-    return item.productId.toString() === productId;
-  });
-  //console.log(exsistsProductInCart);
-  if (exsistsProductInCart === -1) {
-    const err = new Error("no product found in the cart");
-    err.status = 404;
-    return next(err);
-  } else {
-    cart.items.splice(exsistsProductInCart, 1);
-    await user.save();
-  }
-  res.status(200).json({
-    message: "the product is deleted from cart",
-    cart: user.cart,
-  });
 };
 
 exports.postorder = async (req, res, next) => {

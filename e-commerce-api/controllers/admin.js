@@ -324,11 +324,17 @@ exports.getInformationABoutProducts = async (req, res, next) => {
   //     remainingProducts: remainingProducts,
   //   });
   // }
+  try {
+    const products = await Product.find();
 
-  const products = await Product.find();
-
-  res.status(200).json({
-    message: "the products",
-    products: products,
-  });
+    res.status(200).json({
+      message: "the products",
+      products: products,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
 };
