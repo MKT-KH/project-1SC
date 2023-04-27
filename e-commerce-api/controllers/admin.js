@@ -282,6 +282,8 @@ exports.changeEtatOrder = async (req, res, next) => {
       for (const product of products) {
         const prod = await Product.findById(product.productId);
         prod.quantity = prod.quantity - product.quantity;
+        let productsSales = 0;
+        prod.sales = productsSales + product.quantity;
         await prod.save();
       }
     }
@@ -298,30 +300,32 @@ exports.changeEtatOrder = async (req, res, next) => {
 };
 
 exports.getInformationABoutProducts = async (req, res, next) => {
-  let productsInfo = [];
+  // let productsInfo = [];
 
-  const orders = await Order.find({ orderstatus: "delivred" });
-  const products = orders
-    .map((item) => {
-      return item.products;
-    })
-    .flat();
+  // const orders = await Order.find({ orderstatus: "delivred" });
+  // const products = orders
+  //   .map((item) => {
+  //     return item.products;
+  //   })
+  //   .flat();
 
-  for (const product of products) {
-    const prod = await Product.findById(product.productId);
-    let productsSales = 0;
-    productsSales = productsSales + product.quantity;
-    let remainingProducts = 0;
-    remainingProducts = prod.quantity - product.quantity;
-    productsInfo.push({
-      productName: prod.name,
-      productsSales: productsSales,
-      remainingProducts: remainingProducts,
-    });
-  }
+  // for (const product of products) {
+  //   const prod = await Product.findById(product.productId);
+  //   let productsSales = 0;
+  //   productsSales = productsSales + product.quantity;
+  //   let remainingProducts = 0;
+  //   remainingProducts = prod.quantity - product.quantity;
+  //   productsInfo.push({
+  //     productName: { prod },
+  //     productsSales: productsSales,
+  //     remainingProducts: remainingProducts,
+  //   });
+  // }
+
+  const products = await Product.find();
 
   res.status(200).json({
     message: "the products",
-    productsInfo: productsInfo,
+    products: products,
   });
 };
