@@ -282,6 +282,9 @@ exports.changeEtatOrder = async (req, res, next) => {
       for (const product of products) {
         const prod = await Product.findById(product.productId);
         prod.quantity = prod.quantity - product.quantity;
+        if (prod.quantity < 0) {
+          prod.quantity = 0;
+        }
         let productsSales = 0;
         prod.sales = productsSales + product.quantity;
         await prod.save();

@@ -93,23 +93,32 @@ exports.addToCart = async (req, res, next) => {
   }
   const product = await Product.findById(productId);
   const cart = user.cart;
-
   const exsitsProduct = cart.items.findIndex((item) => {
     return item.productId.toString() === productId;
   });
   //console.log(exsitsProduct);
   if (exsitsProduct !== -1) {
-    cart.items[exsitsProduct].quantity += 1;
-    cart.items[exsitsProduct].totalePrice =
-      cart.items[exsitsProduct].totalePrice +
-      product.price * cart.items[exsitsProduct].quantity;
+    if (product.quantity >= 1) {
+      cart.items[exsitsProduct].quantity += 1;
+      cart.items[exsitsProduct].totalePrice =
+        cart.items[exsitsProduct].totalePrice +
+        product.price * cart.items[exsitsProduct].quantity;
+    } else {
+      const error = new Error("you cant add the product the qty is not enough");
+      return next(error);
+    }
   } else {
-    const newItem = {
-      productId: productId,
-      quantity: 1,
-      totalePrice: product.price,
-    };
-    cart.items.push(newItem);
+    if (product.quantity >= 1) {
+      const newItem = {
+        productId: productId,
+        quantity: 1,
+        totalePrice: product.price,
+      };
+      cart.items.push(newItem);
+    } else {
+      const error = new Error("you cant add the product the qty is not enough");
+      return next(error);
+    }
   }
   await user.save();
   res.status(200).json({
