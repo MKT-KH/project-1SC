@@ -55,4 +55,10 @@ router.get(
   isAdmin,
   adminControllers.getInformationABoutProducts
 );
+router.get(
+  "/types/:type",
+  isAuth,
+  isAdmin,
+  adminControllers.getProductsForType
+);
 module.exports = router;

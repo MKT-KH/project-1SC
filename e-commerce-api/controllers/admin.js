@@ -339,3 +339,23 @@ exports.getInformationABoutProducts = async (req, res, next) => {
     next(err);
   }
 };
+exports.getProductsForType = async (req, res, next) => {
+  const type = req.params.type;
+  try {
+    const products = await Product.find({ type: type });
+    if (products.length < 1) {
+      const err = new Error(`no products found for this ${type}`);
+      err.status = 404;
+      return next(err);
+    }
+    res.status(200).json({
+      message: `the products for ${type} type are : `,
+      products: products,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
