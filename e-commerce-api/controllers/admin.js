@@ -323,6 +323,7 @@ exports.getInformationABoutProducts = async (req, res, next) => {
   //     productsSales: productsSales,
   //     remainingProducts: remainingProducts,
   //   });
+  //
   // }
   try {
     const products = await Product.find();
