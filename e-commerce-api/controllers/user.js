@@ -399,3 +399,35 @@ exports.deleteFromFavorites = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateCart = async (req, res, next) => {
+  // const errors = validationResult(req);
+  // if (!errors.isEmpty()) {
+  //   const error = new Error("the cart schema is not matched");
+  //   error.status = 422;
+  //   error.data = errors.array();
+  //   return next(error);
+  // }
+
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    const cart = req.body.cart;
+    user.cart.items = cart.items;
+    await user.save();
+    res.status(200).json({
+      message: "the cart is update",
+      cart: user.cart,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};

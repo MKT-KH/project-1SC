@@ -10,6 +10,7 @@ const router = express.Router();
 
 const userControllers = require("../controllers/user");
 const isAuth = require("../middleware/is-auth");
+const { compare } = require("bcryptjs");
 
 router.patch(
   "/edit",
@@ -33,6 +34,7 @@ router.patch(
 );
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
 router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
+router.put("/cart/:userId", isAuth, userControllers.updateCart);
 router.get("/cart", isAuth, userControllers.getCart);
 router.delete("/cart", isAuth, userControllers.deleteCart);
 router.post("/order", isAuth, userControllers.postorder);
