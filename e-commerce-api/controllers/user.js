@@ -418,6 +418,15 @@ exports.updateCart = async (req, res, next) => {
       return next(err);
     }
     const cart = req.body.cart;
+    for (const prodcutCart of cart.items) {
+      const prodDataBase = await Product.findById(prodcutCart.productId);
+      if (prodDataBase.quantity < prodcutCart.quantity) {
+        const err = new Error(
+          `the qty is not enough for this prodcut with id : ${prodcutCart.productId}`
+        );
+        return next(err);
+      }
+    }
     user.cart.items = cart.items;
     await user.save();
     res.status(200).json({
