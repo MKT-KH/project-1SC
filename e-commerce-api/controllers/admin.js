@@ -10,7 +10,7 @@ exports.createProduct = async (req, res, next) => {
   const price = req.body.price;
   const type = req.body.type;
   const quantity = req.body.quantity;
-  const colors = req.body.colors;
+  const colors = req.body.colors.split(",");
   const images = req.files.map((file) => file.path);
   try {
     const exsitsProduct = await Product.findOne({ name: name });
