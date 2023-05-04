@@ -41,14 +41,24 @@ exports.editUser = async (req, res, next) => {
         const error = new Error(
           "the email is alerdy in use please take nother email"
         );
-        error.status = 403;
+        error.status = 409;
         return next(error);
       }
     }
-    const hashedPassword = await bcrypt.hash(updatedPassword, 12);
+    if (updatedPassword) {
+      if (updatedPassword.length < 8) {
+        const error = new Error(
+          "The password should be at least 8 characters long"
+        );
+        error.status = 422;
+        return next(error);
+      }
+      const hashedPassword = await bcrypt.hash(updatedPassword, 12);
+      user.password = hashedPassword;
+    }
+
     user.name = updatedName;
     user.email = updatedEmail;
-    user.password = hashedPassword;
     user.phoneNumber = updatedPhone;
     user.address = updatedPassword;
     user.address = updatedAdress;
@@ -440,3 +450,40 @@ exports.updateCart = async (req, res, next) => {
     next(err);
   }
 };
+// rating (sur 5 star).. historiqe(ychof produit li chrawhom,rating,quia jouter produit ll favorites)..
+// les admin avec privilige .. delivred date
+exports.addRating = async (req, res, next) => {
+  const productId = req.params.productId;
+  const rate = req.body.rate;
+  try {
+    const prodcut = await Product.findById(productId);
+    if (!prodcut) {
+      const error = new Error("no product found");
+      error.status = 404;
+      return next(error);
+    }
+    prodcut.allRate.rating.push({
+      userId: req.userId,
+      ratingValue: rate,
+      ratingDate: new Date(),
+    });
+    const rates = prodcut.allRate.rating;
+    const length = prodcut.allRate.rating.length();
+    let allRatesValue = 0;
+    for (const rate of rates) {
+      allRatesValue = allRatesValue + rate.ratingValue;
+    }
+    prodcut.rate = allRatesValue / length;
+    res.status(200).json({
+      message: "the rate is added succsufly",
+      rate: prodcut.rate,
+      prodcut: prodcut,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+exports.getHistoric = () => {};

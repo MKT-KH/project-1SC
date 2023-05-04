@@ -31,9 +31,31 @@ const ProductSchema = new Schema({
       required: true,
     },
   ],
+  description: {
+    type: String,
+    required: true,
+  },
   sales: {
     type: Number,
     default: 0,
+  },
+  allRate: {
+    rating: [
+      {
+        userId: {
+          type: mongoose.Types.ObjectId,
+        },
+        ratingValue: {
+          type: Number,
+        },
+        ratingDate: {
+          type: Date,
+        },
+      },
+    ],
+  },
+  rate: {
+    type: Number,
   },
 });
 

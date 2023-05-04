@@ -10,14 +10,14 @@ const storage = require("../config/cloudinary");
 
 const upload = multer({ storage: storage.storageProductImages });
 
-router.put(
+router.post(
   "/product",
   upload.array("images"),
   isAuth,
   isAdmin,
   adminControllers.createProduct
 );
-router.patch(
+router.put(
   "/product/:productId",
   upload.array("images"),
   isAuth,
@@ -61,4 +61,6 @@ router.get(
   isAdmin,
   adminControllers.getProductsForType
 );
+router.get("/users", isAuth, isAdmin, adminControllers.getUsers);
+router.patch("/etat/:userId", isAuth, isAdmin, adminControllers.ChangeEtatUser);
 module.exports = router;

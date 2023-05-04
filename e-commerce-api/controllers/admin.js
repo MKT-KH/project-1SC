@@ -1,16 +1,18 @@
 const path = require("path");
-
+//ydkhl posonstage .. w period ... classe ..
 cloudinary = require("cloudinary");
 
 const Product = require("../models/product");
 const Order = require("../models/order");
+const User = require("../models/user");
 
 exports.createProduct = async (req, res, next) => {
   const name = req.body.name;
   const price = req.body.price;
   const type = req.body.type;
   const quantity = req.body.quantity;
-  const colors = req.body.colors.split(",");
+  const colors = req.body.colors;
+  const description = req.body.description;
   const images = req.files.map((file) => file.path);
   try {
     const exsitsProduct = await Product.findOne({ name: name });
@@ -27,6 +29,7 @@ exports.createProduct = async (req, res, next) => {
       quantity: quantity,
       imageUrl: images,
       colors: colors,
+      description: description,
     });
     await product.save();
     res.status(201).json({
@@ -56,12 +59,14 @@ exports.editProduct = async (req, res, next) => {
     const type = req.body.type;
     const quantity = req.body.quantity;
     const colors = req.body.colors;
+    const description = req.body.description;
     const images = req.files.map((file) => file.path);
 
     product.name = name;
     product.price = price;
     product.type = type;
     product.quantity = quantity;
+    product.description = description;
     product.colors = colors;
 
     if (images.length >= 1) {
@@ -359,3 +364,49 @@ exports.getProductsForType = async (req, res, next) => {
     next(err);
   }
 };
+exports.getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find();
+    res.status(200).json({
+      message: "users",
+      users: users,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+exports.ChangeEtatUser = async (req, res, next) => {
+  const userId = req.params.userId;
+  const userEtat = req.body.etat;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error("no user found");
+      error.status = 404;
+      return next(error);
+    }
+    user.Blacklisted = userEtat;
+    await user.save();
+    res.status(200).json({
+      message: "the etat for user is updated",
+      etat: user.Blacklisted,
+      user: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+// exports.createAdmin =(req,res,next)=>{
+//   const name = req.body.name;
+//   const email = req.body.email
+//   const password = req.body.password
+//   //verfiy isAdmin phoneNumber adminRoles
+// const roles = req.body.roles ;
+
+// }

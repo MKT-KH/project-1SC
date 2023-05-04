@@ -173,6 +173,11 @@ exports.login = async (req, res, next) => {
       error.status = 404;
       return next(error);
     }
+    if (user.Blacklisted) {
+      const error = new Error("you are blocked try later");
+      error.status = 403;
+      return next(error);
+    }
     const token = jwt.sign(
       { email: email, userId: user._id },
       process.env.TOKEN_SECERT_KEY,

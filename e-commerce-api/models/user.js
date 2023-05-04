@@ -74,6 +74,17 @@ const UserSchema = new Schema({
       },
     ],
   },
+  adminRoles: {
+    roles: [
+      {
+        type: String,
+      },
+    ],
+  },
+  Blacklisted: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

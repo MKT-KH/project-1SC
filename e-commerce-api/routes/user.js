@@ -12,16 +12,11 @@ const userControllers = require("../controllers/user");
 const isAuth = require("../middleware/is-auth");
 const { compare } = require("bcryptjs");
 
-router.patch(
+router.put(
   "/edit",
   upload.single("image"),
   [
     body("updatedEmail").isEmail().trim(),
-    body("updatedPassword")
-      .isAlphanumeric()
-      .trim()
-      .isLength({ min: 8 })
-      .withMessage("the password should be at least 8 digits"),
     body("updatedName").isLength({ min: 4 }),
     body("updatedPhone")
       .isLength({ min: 10, max: 10 })
