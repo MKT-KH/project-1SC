@@ -193,6 +193,7 @@ exports.login = async (req, res, next) => {
     res.status(200).json({
       token: token,
       message: "the user is loged in",
+      user: user,
       userId: user._id,
       isAdmin: user.isAdmin,
     });
