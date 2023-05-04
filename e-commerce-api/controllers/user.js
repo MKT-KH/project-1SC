@@ -6,6 +6,7 @@ const path = require("path");
 const User = require("../models/user");
 const Product = require("../models/product");
 const Order = require("../models/order");
+const product = require("../models/product");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -450,34 +451,33 @@ exports.updateCart = async (req, res, next) => {
     next(err);
   }
 };
-// rating (sur 5 star).. historiqe(ychof produit li chrawhom,rating,quia jouter produit ll favorites)..
-// les admin avec privilige .. delivred date
+
 exports.addRating = async (req, res, next) => {
   const productId = req.params.productId;
   const rate = req.body.rate;
   try {
-    const prodcut = await Product.findById(productId);
-    if (!prodcut) {
+    const product = await Product.findById(productId);
+    if (!product) {
       const error = new Error("no product found");
       error.status = 404;
       return next(error);
     }
-    prodcut.allRate.rating.push({
+    product.allRate.rating.push({
       userId: req.userId,
       ratingValue: rate,
       ratingDate: new Date(),
     });
-    const rates = prodcut.allRate.rating;
-    const length = prodcut.allRate.rating.length();
+    const rates = product.allRate.rating;
+    const length = product.allRate.rating.length;
     let allRatesValue = 0;
     for (const rate of rates) {
       allRatesValue = allRatesValue + rate.ratingValue;
     }
-    prodcut.rate = allRatesValue / length;
+    product.rate = allRatesValue / length;
+    await product.save();
     res.status(200).json({
       message: "the rate is added succsufly",
-      rate: prodcut.rate,
-      prodcut: prodcut,
+      product: product,
     });
   } catch (err) {
     if (!err.status) {

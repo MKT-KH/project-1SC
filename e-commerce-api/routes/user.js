@@ -41,4 +41,5 @@ router.delete(
   isAuth,
   userControllers.deleteFromFavorites
 );
+router.post("/product/:productId", isAuth, userControllers.addRating);
 module.exports = router;
