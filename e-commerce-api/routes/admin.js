@@ -63,4 +63,10 @@ router.get(
 );
 router.get("/users", isAuth, isAdmin, adminControllers.getUsers);
 router.patch("/etat/:userId", isAuth, isAdmin, adminControllers.ChangeEtatUser);
+router.post(
+  "/add-admin/:userId",
+  isAuth,
+  isAdmin,
+  adminControllers.createAdmin
+);
 module.exports = router;

@@ -6,24 +6,16 @@ const path = require("path");
 const User = require("../models/user");
 const Product = require("../models/product");
 const Order = require("../models/order");
-const product = require("../models/product");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
   const updatedEmail = req.body.updatedEmail;
   const updatedAdress = req.body.updatedAdress;
+  const currentPassword = req.body.currentPassword;
   const updatedPassword = req.body.updatedPassword;
+  const confirmedUpdatedPassword = req.body.confirmedUpdatedPassword;
   const updatedPhone = req.body.updatedPhone;
   const image = req.file;
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = new Error("the input are invalid");
-    error.status = 422;
-    error.data = errors.array();
-    return next(error);
-  }
-
   try {
     const user = await User.findById(req.userId);
     if (!user) {
@@ -54,15 +46,53 @@ exports.editUser = async (req, res, next) => {
         error.status = 422;
         return next(error);
       }
+      if (confirmedUpdatedPassword !== updatedPassword) {
+        const err = new Error("the two passwords are not matched");
+        err.status = 401;
+        return next(err);
+      }
+      const isEqual = await bcrypt.compare(currentPassword, user.password);
+      if (!isEqual) {
+        const err = new Error(
+          "the password is not correct , you cant update the password"
+        );
+        err.status = 401;
+        return next(err);
+      }
+
       const hashedPassword = await bcrypt.hash(updatedPassword, 12);
       user.password = hashedPassword;
     }
+    if (updatedName) {
+      if (updatedPassword.length < 4) {
+        const error = new Error("the name is at least 4 charchter");
+        error.status = 422;
+        return next(error);
+      }
+      user.name = updatedName;
+    }
+    if (updatedEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(updatedEmail)) {
+        const error = new Error("Please enter a valid email address");
+        error.status = 422;
+        return next(error);
+      }
+      user.email = updatedEmail;
+    }
 
-    user.name = updatedName;
-    user.email = updatedEmail;
-    user.phoneNumber = updatedPhone;
-    user.address = updatedPassword;
-    user.address = updatedAdress;
+    if (updatedPhone) {
+      if (!/^[0-9]{10}$/.test(updatedPhone)) {
+        const error = new Error("Phone number must be exactly 10 digits");
+        error.status = 422;
+        return next(error);
+      }
+      user.phoneNumber = updatedPhone;
+    }
+
+    if (updatedAdress) {
+      user.address = updatedAdress;
+    }
 
     if (image) {
       if (!user.imageUrl) {
@@ -158,6 +188,16 @@ exports.getCart = async (req, res, next) => {
       return next(err);
     }
     const cart = user.cart.items;
+    for (const item2 of cart) {
+      const prodcut = await Product.findById(item2.productId);
+      if (!prodcut) {
+        const index = cart.findIndex((item) => {
+          return item.productId === item2.productId;
+        });
+        cart.splice(index, 1);
+        await user.save();
+      }
+    }
     res.status(200).json({
       message: "cart",
       cart: cart,

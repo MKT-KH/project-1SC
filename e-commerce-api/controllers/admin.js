@@ -1,10 +1,28 @@
 const path = require("path");
-//ydkhl posonstage .. w period ... classe ..
+
 cloudinary = require("cloudinary");
 
 const Product = require("../models/product");
 const Order = require("../models/order");
 const User = require("../models/user");
+
+const roleForProducts = "product management";
+const roleForUsers = "users management";
+const roleForOrders = "orders management";
+const roleForStatistics = "statistics management";
+const roleForSuperAdmin = "superAdmin";
+//{
+//  "adminRoles": ["superAdmin", "product management", "users management", "orders management", "statistics management"]
+//}
+
+//with req.userId find the user and see the roles tables and see if it permemited to do somthing like creation
+//find the user and compare with each roles i the table
+//roles : creation product , see the staticts , block and deblock users , cancel a command
+//gestion product(create delte , edit) management product
+//gestion users(block users deblock users and )  users management
+//superadmin(have all the acess and have addition role that is create admins and give them the roles )
+//gestion orders(cancell them)  orders management
+//gestion statics  statistics management
 
 exports.createProduct = async (req, res, next) => {
   const name = req.body.name;
@@ -15,10 +33,12 @@ exports.createProduct = async (req, res, next) => {
   const description = req.body.description;
   const images = req.files.map((file) => file.path);
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
+
     const exsitsProduct = await Product.findOne({ name: name });
     if (exsitsProduct) {
       const error = new Error("the product is aleardy exsits");
-      error.status = 400;
+      error.status = 409;
       return next(error);
     }
 
@@ -47,6 +67,7 @@ exports.createProduct = async (req, res, next) => {
 exports.editProduct = async (req, res, next) => {
   const productId = req.params.productId;
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
     const product = await Product.findById(productId);
     if (!product) {
       const err = new Error("no product found");
@@ -102,6 +123,8 @@ exports.editProduct = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
   const productId = req.params.productId;
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
+
     const product = await Product.findById(productId);
     if (!product) {
       const error = new Error("no product found");
@@ -121,6 +144,7 @@ exports.deleteProduct = async (req, res, next) => {
         }
       });
     });
+
     await Product.findByIdAndRemove(productId);
     res.status(200).json({
       message: "the product is deleted",
@@ -135,6 +159,8 @@ exports.deleteProduct = async (req, res, next) => {
 
 exports.getOrders = async (req, res, next) => {
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForOrders);
+
     const orders = await Order.find();
     if (!orders) {
       const err = new Error("no orders found");
@@ -155,6 +181,8 @@ exports.getOrders = async (req, res, next) => {
 
 exports.getStatisticsAboutOrders = async (req, res, next) => {
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForStatistics);
+
     let totalPrice = 0;
     let totalPriceForShippedOrders = 0;
     let totalPriceForActiveOrders = 0;
@@ -232,6 +260,7 @@ exports.getStatisticsAboutOrders = async (req, res, next) => {
 
 exports.getStatisticsAboutOrdersPrice = async (req, res, next) => {
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForOrders);
     const shippedOrders = await Order.find({ Orderstatus: "delivred" });
     let totalPriceByMonth = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -275,6 +304,8 @@ exports.getStatisticsAboutOrdersPrice = async (req, res, next) => {
 
 exports.changeEtatOrder = async (req, res, next) => {
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForOrders);
+
     const orderId = req.params.orderId;
     const orderStatus = req.body.orderStatus;
     const order = await Order.findById(orderId);
@@ -331,6 +362,7 @@ exports.getInformationABoutProducts = async (req, res, next) => {
   //
   // }
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
     const products = await Product.find();
 
     res.status(200).json({
@@ -347,6 +379,7 @@ exports.getInformationABoutProducts = async (req, res, next) => {
 exports.getProductsForType = async (req, res, next) => {
   const type = req.params.type;
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
     const products = await Product.find({ type: type });
     if (products.length < 1) {
       const err = new Error(`no products found for this ${type}`);
@@ -366,6 +399,7 @@ exports.getProductsForType = async (req, res, next) => {
 };
 exports.getUsers = async (req, res, next) => {
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForUsers);
     const users = await User.find();
     res.status(200).json({
       message: "users",
@@ -382,6 +416,8 @@ exports.ChangeEtatUser = async (req, res, next) => {
   const userId = req.params.userId;
   const userEtat = req.body.etat;
   try {
+    await permission(req.userId, roleForSuperAdmin, roleForUsers);
+
     const user = await User.findById(userId);
     if (!user) {
       const error = new Error("no user found");
@@ -402,11 +438,40 @@ exports.ChangeEtatUser = async (req, res, next) => {
     next(err);
   }
 };
-// exports.createAdmin =(req,res,next)=>{
-//   const name = req.body.name;
-//   const email = req.body.email
-//   const password = req.body.password
-//   //verfiy isAdmin phoneNumber adminRoles
-// const roles = req.body.roles ;
 
-// }
+exports.createAdmin = async (req, res, next) => {
+  const userId = req.params.userId;
+  const adminRoles = req.body.adminRoles;
+  try {
+    await permission(req.userId, roleForSuperAdmin);
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    user.isAdmin = true;
+    user.adminRoles.roles = adminRoles;
+    await user.save();
+    res.status(200).json({
+      message: "the admin is created succesflyy",
+      admin: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+const permission = async (userId, ...roles) => {
+  const admin = await User.findById(userId);
+  const userRoles = admin.adminRoles.roles;
+  const existRoles = roles.some((role) => userRoles.includes(role));
+  if (!existRoles) {
+    const err = new Error("This admin is not permitted to do this task");
+    err.status = 403;
+    throw err;
+  }
+};

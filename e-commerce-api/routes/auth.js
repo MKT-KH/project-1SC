@@ -10,7 +10,7 @@ const upload = multer({ storage: storage.storageProfileImages });
 
 const router = express.Router();
 
-router.put(
+router.post(
   "/signup",
   upload.single("image"),
   [

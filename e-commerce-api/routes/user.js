@@ -12,21 +12,7 @@ const userControllers = require("../controllers/user");
 const isAuth = require("../middleware/is-auth");
 const { compare } = require("bcryptjs");
 
-router.put(
-  "/edit",
-  upload.single("image"),
-  [
-    body("updatedEmail").isEmail().trim(),
-    body("updatedName").isLength({ min: 4 }),
-    body("updatedPhone")
-      .isLength({ min: 10, max: 10 })
-      .withMessage("Phone number must be exactly 10 digits")
-      .matches(/^[0-9]+$/)
-      .withMessage("Phone number must only contain digits"),
-  ],
-  isAuth,
-  userControllers.editUser
-);
+router.put("/edit", upload.single("image"), isAuth, userControllers.editUser);
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
 router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
 router.put("/cart/:userId", isAuth, userControllers.updateCart);
