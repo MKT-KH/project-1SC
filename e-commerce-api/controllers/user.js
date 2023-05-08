@@ -165,6 +165,9 @@ exports.addToCart = async (req, res, next) => {
         return next(error);
       }
     }
+    const date = new Date();
+    const history = user.history.items;
+    history.push({ productId: productId, date: date, action: "add to cart" });
     await user.save();
     res.status(200).json({
       message: "add to cart succsuflyy",
@@ -255,6 +258,13 @@ exports.deleteFromCart = async (req, res, next) => {
       return next(err);
     } else {
       cart.items.splice(exsistsProductInCart, 1);
+      const date = new Date();
+      const history = user.history.items;
+      history.push({
+        productId: productId,
+        date: date,
+        action: "delete from cart",
+      });
       await user.save();
     }
     res.status(200).json({
@@ -526,4 +536,23 @@ exports.addRating = async (req, res, next) => {
     next(err);
   }
 };
-exports.getHistoric = () => {};
+exports.getHistoric = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    res.status(200).json({
+      message: "historic for the user",
+      history: user.history,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};

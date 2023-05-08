@@ -85,6 +85,24 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  history: {
+    items: [
+      {
+        action: {
+          type: String,
+        },
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        date: {
+          type: Date,
+          required: true,
+        },
+      },
+    ],
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

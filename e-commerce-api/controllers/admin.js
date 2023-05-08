@@ -1,10 +1,21 @@
 const path = require("path");
+const { validationResult } = require("express-validator/check");
+const nodemailer = require("nodemailer");
+const sendGridTransport = require("nodemailer-sendgrid-transport");
 
 cloudinary = require("cloudinary");
 
 const Product = require("../models/product");
 const Order = require("../models/order");
 const User = require("../models/user");
+
+const transport = nodemailer.createTransport(
+  sendGridTransport({
+    auth: {
+      api_key: process.env.SENDGRID_API,
+    },
+  })
+);
 
 const roleForProducts = "product management";
 const roleForUsers = "users management";
@@ -456,6 +467,109 @@ exports.createAdmin = async (req, res, next) => {
     res.status(200).json({
       message: "the admin is created succesflyy",
       admin: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.addDiscount = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("the input are invalid");
+    error.status = 422;
+    error.data = errors.array();
+    return next(error);
+  }
+  const productId = req.params.productId;
+  const discount = req.body.discount;
+  try {
+    await permission(req.userId, roleForSuperAdmin, roleForProducts);
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no prodcuct found");
+      err.status = 404;
+      return next(err);
+    }
+    product.discount = discount;
+    await product.save();
+    const users = await User.find();
+    for (const user of users) {
+      transport.sendMail({
+        to: user.email,
+        from: process.env.SENDER_EMAIL,
+        subject: "Please Verify Your Account",
+        html: `
+        <html>
+        <head>
+          <style>
+            .container {
+              width: 100%;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              box-sizing: border-box;
+              font-family: Arial, sans-serif;
+              font-size: 16px;
+              line-height: 1.5;
+              color: #333;
+            }
+            
+            h1 {
+              margin-top: 0;
+              margin-bottom: 20px;
+              text-align: center;
+              font-size: 24px;
+              font-weight: bold;
+              color: #333;
+            }
+            
+            p {
+              margin-top: 0;
+              margin-bottom: 20px;
+            }
+            
+            img {
+              display: block;
+              margin: 0 auto;
+              max-width: 100%;
+              height: auto;
+            }
+            
+            .product-name {
+              font-weight: bold;
+            }
+            
+            .discount {
+              color: #ff5733;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Product Discount</h1>
+            <p>Dear User,</p>
+            <p>We wanted to let you know that one of our products is currently on sale! Take advantage of this limited time offer by visiting our website and placing an order today.</p>
+            <p><img src="${product.imageUrl[0]}" alt="[Product Image]"></p>
+            <p>Product Name: <span class="product-name">${product.name}</span></p>
+            <p>Discount: <span class="discount">${product.discount}% off</span></p>
+            <p>Thank you for being a valued customer!</p>
+            <p>Sincerely,</p>
+            <p>The ByteBuilders Team</p>
+          </div>
+        </body>
+      </html>
+`,
+      });
+    }
+
+    res.status(200).json({
+      message: "the discount added",
+      product: product,
     });
   } catch (err) {
     if (!err.status) {

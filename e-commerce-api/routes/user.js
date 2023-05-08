@@ -28,4 +28,5 @@ router.delete(
   userControllers.deleteFromFavorites
 );
 router.post("/product/:productId", isAuth, userControllers.addRating);
+router.get("/history", isAuth, userControllers.getHistoric);
 module.exports = router;

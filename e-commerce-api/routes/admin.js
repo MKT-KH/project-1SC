@@ -1,12 +1,13 @@
 const express = require("express");
-
-const router = express.Router();
+const multer = require("multer");
+const { body } = require("express-validator/check");
 
 const isAdmin = require("../middleware/is-admin");
 const isAuth = require("../middleware/is-auth");
 const adminControllers = require("../controllers/admin");
-const multer = require("multer");
 const storage = require("../config/cloudinary");
+
+const router = express.Router();
 
 const upload = multer({ storage: storage.storageProductImages });
 
@@ -68,5 +69,16 @@ router.post(
   isAuth,
   isAdmin,
   adminControllers.createAdmin
+);
+router.post(
+  "/discount/:productId",
+  [
+    body("discount")
+      .isInt({ min: 0, max: 100 })
+      .withMessage("Number must be between 0 and 100"),
+  ],
+  isAuth,
+  isAdmin,
+  adminControllers.addDiscount
 );
 module.exports = router;
