@@ -556,3 +556,24 @@ exports.getHistoric = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getInfoAboutUser = async (req, res, next) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("user not found");
+      err.status = 404;
+      return next(err);
+    }
+    res.status(200).json({
+      message: "the info about user",
+      user: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
