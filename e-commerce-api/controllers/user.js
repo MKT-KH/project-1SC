@@ -508,37 +508,22 @@ exports.deleteFromFavorites = async (req, res, next) => {
 };
 
 exports.updateCart = async (req, res, next) => {
-  // const errors = validationResult(req);
-  // if (!errors.isEmpty()) {
-  //   const error = new Error("the cart schema is not matched");
-  //   error.status = 422;
-  //   error.data = errors.array();
-  //   return next(error);
-  // }
-
+  const cartItem = req.body.cartItem.items;
   const userId = req.params.userId;
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      const err = new Error("no user found");
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) {
+      const err = new Error("no cart found");
       err.status = 404;
       return next(err);
     }
-    const cart = req.body.cart;
-    for (const prodcutCart of cart.items) {
-      const prodDataBase = await Product.findById(prodcutCart.productId);
-      if (prodDataBase.quantity < prodcutCart.quantity) {
-        const err = new Error(
-          `the qty is not enough for this prodcut with id : ${prodcutCart.productId}`
-        );
-        return next(err);
-      }
-    }
-    user.cart.items = cart.items;
-    await user.save();
-    res.status(200).json({
-      message: "the cart is update",
-      cart: user.cart,
+
+    cart.items = cartItem;
+
+    await cart.save();
+    res.status(404).json({
+      message: "the cart is updated",
+      cart: cart,
     });
   } catch (err) {
     if (!err.status) {
