@@ -13,7 +13,6 @@ const isAuth = require("../middleware/is-auth");
 const { compare } = require("bcryptjs");
 
 router.put("/edit", upload.single("image"), isAuth, userControllers.editUser);
-router.get("/:userId", isAuth, userControllers.getInfoAboutUser);
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
 router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
 router.put("/cart/:userId", isAuth, userControllers.updateCart);
@@ -30,4 +29,5 @@ router.delete(
 );
 router.post("/product/:productId", isAuth, userControllers.addRating);
 router.get("/history", isAuth, userControllers.getHistoric);
+router.get("/user-info", isAuth, userControllers.getInfoAboutUser);
 module.exports = router;
