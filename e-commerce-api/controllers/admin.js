@@ -204,9 +204,16 @@ exports.getStatisticsAboutOrders = async (req, res, next) => {
     });
 
     for (const item of products) {
-      for (const item2 of item) {
-        const product = await Product.findById(item2.productId);
-        const totalPriceOfProduct = product.price * item2.quantity;
+      for (const secondItem of item) {
+        const product = await Product.findById(secondItem.productId);
+        if (!product) {
+          const err = new Error(
+            `no product found in data base for this product ${secondItem.productId}`
+          );
+          err.status = 404;
+          return next(err);
+        }
+        const totalPriceOfProduct = product.price * secondItem.quantity;
         totalPrice = totalPrice + totalPriceOfProduct;
       }
     }
@@ -222,31 +229,78 @@ exports.getStatisticsAboutOrders = async (req, res, next) => {
     });
 
     for (const item of productsOfShippedOrders) {
-      for (const item2 of item) {
-        const product = await Product.findById(item2.productId);
-        const totalPriceOfProduct = product.price * item2.quantity;
+      for (const secondItem of item) {
+        const product = await Product.findById(secondItem.productId);
+        if (!product) {
+          const err = new Error(
+            `no product found in data base for this product ${secondItem.productId}`
+          );
+          err.status = 404;
+          return next(err);
+        }
+        const totalPriceOfProduct = product.price * secondItem.quantity;
         totalPriceForShippedOrders =
           totalPriceForShippedOrders + totalPriceOfProduct;
       }
     }
 
-    const activeOrderNumber = await Order.find().countDocuments();
+    const activeOrderNumber = await Order.find({
+      Orderstatus: "active",
+    }).countDocuments();
 
-    const activedOrders = await Order.find({ Orderstatus: "shipped" });
+    const activedOrders = await Order.find({ Orderstatus: "active" });
 
     const productsOfActiveOrders = activedOrders.map((item) => {
       return item.products;
     });
 
     for (const item of productsOfActiveOrders) {
-      for (const item2 of item) {
-        const product = await Product.findById(item2.productId);
-        const totalPriceOfProduct = product.price * item2.quantity;
+      for (const secondItem of item) {
+        const product = await Product.findById(secondItem.productId);
+        if (!product) {
+          const err = new Error(
+            `no product found in data base for this product ${secondItem.productId}`
+          );
+          err.status = 404;
+          return next(err);
+        }
+        const totalPriceOfProduct = product.price * secondItem.quantity;
         totalPriceForActiveOrders =
           totalPriceForActiveOrders + totalPriceOfProduct;
       }
     }
 
+    const fiveOrdersRecents = await Order.find()
+      .sort({ orderDate: -1 })
+      .limit(5);
+    let usersIdsandOrders = [];
+    for (const order of fiveOrdersRecents) {
+      const user = await User.findById(order.userId);
+      if (!user) {
+        const err = new Error(" no user found");
+        err.status = 404;
+        return next(err);
+      }
+      usersIdsandOrders.push({
+        orderId: order.id,
+        userId: order.userId,
+        orderStaus: order.orderstatus,
+      });
+    }
+    let userSNameAndOrdersId = [];
+    for (const user2 of usersIdsandOrders) {
+      const user = await User.findById(user2.userId);
+      if (!user) {
+        const err = new Error(" no user found");
+        err.status = 404;
+        return next(err);
+      }
+      userSNameAndOrdersId.push({
+        orderId: user2.orderId,
+        userName: user.name,
+        orderStatus: user2.orderStaus,
+      });
+    }
     res.status(200).json({
       message: "the total orders",
       totalOrders: totalOrders,
@@ -260,6 +314,8 @@ exports.getStatisticsAboutOrders = async (req, res, next) => {
       totalPriceForActiveOrders: totalPriceForActiveOrders,
       message6: "the active ordernumber",
       activeOrderNumber: activeOrderNumber,
+      message7: "the 5 resentes orders info ",
+      fiveOrdersRecents: userSNameAndOrdersId,
     });
   } catch (err) {
     if (!err.status) {
