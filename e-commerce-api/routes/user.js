@@ -14,10 +14,14 @@ const { compare } = require("bcryptjs");
 
 router.put("/edit", upload.single("image"), isAuth, userControllers.editUser);
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
-router.delete("/cart/:productId", isAuth, userControllers.deleteFromCart);
+router.delete(
+  "/cart/product/:productId",
+  isAuth,
+  userControllers.deleteFromCart
+);
 router.put("/cart/:userId", isAuth, userControllers.updateCart);
 router.get("/cart", isAuth, userControllers.getCart);
-router.delete("/cart", isAuth, userControllers.deleteCart);
+router.delete("/cart/:cartId", isAuth, userControllers.deleteCart);
 router.post("/order", isAuth, userControllers.postorder);
 router.delete("/order/:orderId", isAuth, userControllers.delteOrder);
 router.post("/favorites/:productId", isAuth, userControllers.addToFavorites);
@@ -30,4 +34,5 @@ router.delete(
 router.post("/product/:productId", isAuth, userControllers.addRating);
 router.get("/history", isAuth, userControllers.getHistoric);
 router.get("/user-info", isAuth, userControllers.getInfoAboutUser);
+router.delete("/history", isAuth, userControllers.clearHistory);
 module.exports = router;

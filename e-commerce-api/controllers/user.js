@@ -1,7 +1,8 @@
+const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator/check");
-const path = require("path");
+const Cart = require("../models/cart");
 
 const User = require("../models/user");
 const Product = require("../models/product");
@@ -117,7 +118,9 @@ exports.editUser = async (req, res, next) => {
       user: user,
     });
   } catch (err) {
-    err.status = 500;
+    if (!err.status) {
+      err.status = 500;
+    }
     next(err);
   }
 };
@@ -126,52 +129,78 @@ exports.addToCart = async (req, res, next) => {
   const userId = req.userId;
   const productId = req.params.productId;
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      const err = new Error("no user found");
-      err.status = 404;
-      return next(err);
-    }
     const product = await Product.findById(productId);
-    const cart = user.cart;
-    const exsitsProduct = cart.items.findIndex((item) => {
-      return item.productId.toString() === productId;
-    });
-    //console.log(exsitsProduct);
-    if (exsitsProduct !== -1) {
+    const user = await User.findById(userId);
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) {
+      const newCart = new Cart({
+        userId: userId,
+      });
       if (product.quantity >= 1) {
-        cart.items[exsitsProduct].quantity += 1;
-        cart.items[exsitsProduct].totalePrice =
-          cart.items[exsitsProduct].totalePrice +
-          product.price * cart.items[exsitsProduct].quantity;
-      } else {
-        const error = new Error(
-          "you cant add the product the qty is not enough"
-        );
-        return next(error);
-      }
-    } else {
-      if (product.quantity >= 1) {
-        const newItem = {
+        newCart.productId = productId;
+        newCart.items.push({
           productId: productId,
           quantity: 1,
           totalePrice: product.price,
-        };
-        cart.items.push(newItem);
+        });
+        await newCart.save();
+        user.cartId = newCart.id;
+        user.history.items.push({
+          action: "add to cart",
+          productId: productId,
+          date: new Date(),
+        });
+        await user.save();
+        return res.status(200).json({
+          message: "product add succsufly",
+          cart: newCart,
+        });
       } else {
-        const error = new Error(
-          "you cant add the product the qty is not enough"
-        );
-        return next(error);
+        const err = new Error("you cant add to the cart the qty is not enough");
+        return next(err);
       }
+    } else {
+      const exsitsProduct = cart.items.findIndex((item) => {
+        return item.productId.toString() === productId;
+      });
+      if (exsitsProduct === -1) {
+        if (product.quantity >= 1) {
+          cart.items.push({
+            productId: productId,
+            quantity: 1,
+            totalePrice: product.price,
+          });
+        } else {
+          const err = new Error(
+            "you cant add to the cart the qty is not enough"
+          );
+          return next(err);
+        }
+      } else {
+        if (product.quantity >= 1) {
+          cart.items[exsitsProduct].quantity =
+            cart.items[exsitsProduct].quantity + 1;
+          cart.items[exsitsProduct].totalePrice =
+            cart.items[exsitsProduct].quantity * product.price;
+        } else {
+          const err = new Error(
+            "you cant add to the cart the qty is not enough"
+          );
+          return next(err);
+        }
+      }
+      user.history.items.push({
+        action: "add to cart",
+        productId: productId,
+        date: new Date(),
+      });
+      await user.save();
+      await cart.save();
     }
-    const date = new Date();
-    const history = user.history.items;
-    history.push({ productId: productId, date: date, action: "add to cart" });
-    await user.save();
+
     res.status(200).json({
-      message: "add to cart succsuflyy",
-      cart: user.cart,
+      message: "the product is add succsufly",
+      cart: cart,
     });
   } catch (err) {
     if (!err.status) {
@@ -184,21 +213,23 @@ exports.addToCart = async (req, res, next) => {
 exports.getCart = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      const err = new Error("no user found");
+    const cart = await Cart.findOne({ userId: userId }).populate(
+      "items.productId"
+    );
+    if (!cart) {
+      const err = new Error("this use have no cart");
       err.status = 404;
       return next(err);
     }
-    const cart = user.cart.items;
-    for (const item2 of cart) {
+    const cartItems = cart.items;
+    for (const item2 of cartItems) {
       const prodcut = await Product.findById(item2.productId);
       if (!prodcut) {
         const index = cart.findIndex((item) => {
           return item.productId === item2.productId;
         });
         cart.splice(index, 1);
-        await user.save();
+        await cart.save();
       }
     }
     res.status(200).json({
@@ -214,19 +245,28 @@ exports.getCart = async (req, res, next) => {
 };
 
 exports.deleteCart = async (req, res, next) => {
+  const cartId = req.params.cartId;
   const userId = req.userId;
   try {
     const user = await User.findById(userId);
     if (!user) {
-      const err = new Error("no user found");
+      const err = new Error("No user found");
       err.status = 404;
       return next(err);
     }
-    user.cart.items = [];
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      const err = new Error("no cart found for this user");
+      err.status = 404;
+      return next(err);
+    }
+    await Cart.findByIdAndRemove(cartId);
+
+    user.cartId = null;
     await user.save();
+
     res.status(200).json({
-      message: "cart deleted",
-      cart: user.cart,
+      message: "the cart is delted",
     });
   } catch (err) {
     if (!err.status) {
@@ -237,39 +277,37 @@ exports.deleteCart = async (req, res, next) => {
 };
 
 exports.deleteFromCart = async (req, res, next) => {
+  const userId = req.userId;
   const productId = req.params.productId;
   try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      const err = new Error("no product found");
+    const user = await User.findById(userId);
+    const cart = await Cart.findOne({ userId: userId });
+    if (!cart) {
+      const err = new Error("no cart found for this user");
       err.status = 404;
       return next(err);
     }
-    const userId = req.userId;
-    const user = await User.findById(userId);
-    cart = user.cart;
-    const exsistsProductInCart = cart.items.findIndex((item) => {
+    const cartItems = cart.items;
+    const existsProdcutInCart = cartItems.findIndex((item) => {
       return item.productId.toString() === productId;
     });
-    //console.log(exsistsProductInCart);
-    if (exsistsProductInCart === -1) {
-      const err = new Error("no product found in the cart");
+    if (existsProdcutInCart !== -1) {
+      cart.items.splice(existsProdcutInCart, 1);
+      await cart.save();
+    } else {
+      const err = new Error("the prodcut is not exixts in the cart");
       err.status = 404;
       return next(err);
-    } else {
-      cart.items.splice(exsistsProductInCart, 1);
-      const date = new Date();
-      const history = user.history.items;
-      history.push({
-        productId: productId,
-        date: date,
-        action: "delete from cart",
-      });
-      await user.save();
     }
+    user.history.items.push({
+      action: "delete from cart",
+      productId: productId,
+      date: new Date(),
+    });
+    user.save();
     res.status(200).json({
-      message: "the product is deleted from cart",
-      cart: user.cart,
+      message: "the product is delted",
+      cart: cart,
     });
   } catch (err) {
     if (!err.status) {
@@ -288,19 +326,27 @@ exports.postorder = async (req, res, next) => {
       err.status = 404;
       return next(err);
     }
-    const cart = user.cart;
+    const cartId = user.cartId;
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      const err = new Error("no cart found for this user");
+      err.status = 404;
+      return next(err);
+    }
     const products = cart.items.map((item) => {
       return { productId: item.productId, quantity: item.quantity };
     });
+    console.log(products);
     const order = new Order({
       products: products,
       userId: userId,
       orderDate: new Date(),
     });
     await order.save();
-    user.cart.items = [];
+    cart.items = [];
     user.orderIds.items.push(order._id);
     await user.save();
+    await cart.save();
     res.status(201).json({
       message: "order create succsuflyy",
       order: order,
@@ -559,7 +605,7 @@ exports.getHistoric = async (req, res, next) => {
 
 exports.getInfoAboutUser = async (req, res, next) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate("cartId");
     if (!user) {
       const err = new Error("user not found");
       err.status = 404;
@@ -568,6 +614,28 @@ exports.getInfoAboutUser = async (req, res, next) => {
     res.status(200).json({
       message: "the info about user",
       user: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.clearHistory = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    user.history.items = [];
+    await user.save();
+    res.status(200).json({
+      message: "the history is delted",
     });
   } catch (err) {
     if (!err.status) {
