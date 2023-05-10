@@ -127,6 +127,7 @@ exports.editUser = async (req, res, next) => {
 
 exports.addToCart = async (req, res, next) => {
   const userId = req.userId;
+  const quantity = req.body.quantity;
   const productId = req.params.productId;
   try {
     const product = await Product.findById(productId);
@@ -136,12 +137,12 @@ exports.addToCart = async (req, res, next) => {
       const newCart = new Cart({
         userId: userId,
       });
-      if (product.quantity >= 1) {
+      if (product.quantity >= quantity) {
         newCart.productId = productId;
         newCart.items.push({
           productId: productId,
-          quantity: 1,
-          totalePrice: product.price,
+          quantity: quantity,
+          totalePrice: quantity * product.price,
         });
         await newCart.save();
         user.cartId = newCart.id;
@@ -164,10 +165,10 @@ exports.addToCart = async (req, res, next) => {
         return item.productId.toString() === productId;
       });
       if (exsitsProduct === -1) {
-        if (product.quantity >= 1) {
+        if (product.quantity >= quantity) {
           cart.items.push({
             productId: productId,
-            quantity: 1,
+            quantity: quantity,
             totalePrice: product.price,
           });
         } else {
@@ -177,9 +178,9 @@ exports.addToCart = async (req, res, next) => {
           return next(err);
         }
       } else {
-        if (product.quantity >= 1) {
+        if (product.quantity >= quantity) {
           cart.items[exsitsProduct].quantity =
-            cart.items[exsitsProduct].quantity + 1;
+            cart.items[exsitsProduct].quantity + quantity;
           cart.items[exsitsProduct].totalePrice =
             cart.items[exsitsProduct].quantity * product.price;
         } else {
