@@ -33,6 +33,6 @@ router.delete(
 );
 router.post("/product/:productId", isAuth, userControllers.addRating);
 router.get("/history", isAuth, userControllers.getHistoric);
-router.get("/user-info", isAuth, userControllers.getInfoAboutUser);
+router.get("/user-info/:userId", isAuth, userControllers.getInfoAboutUser);
 router.delete("/history", isAuth, userControllers.clearHistory);
 module.exports = router;

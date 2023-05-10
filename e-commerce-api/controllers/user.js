@@ -590,8 +590,9 @@ exports.getHistoric = async (req, res, next) => {
 };
 
 exports.getInfoAboutUser = async (req, res, next) => {
+  const userId = req.params.userId;
   try {
-    const user = await User.findById(req.userId).populate("cartId");
+    const user = await User.findById(userId).populate("cartId");
     if (!user) {
       const err = new Error("user not found");
       err.status = 404;
