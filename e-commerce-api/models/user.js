@@ -33,56 +33,75 @@ const UserSchema = new Schema({
   phoneNumber: {
     type: String,
   },
-  orderIds: {
-    items: [
-      {
-        productId: {
-          type: Schema.Types.ObjectId,
-          ref: "Order",
-          //required: true,
-        },
-      },
-    ],
-  },
-  favorites: {
-    items: [
-      {
-        productId: {
-          type: Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
-        },
-      },
-    ],
+  Blacklisted: {
+    type: Boolean,
+    default: false,
   },
   cartId: {
     type: Schema.Types.ObjectId,
     ref: "Cart",
   },
-  adminRoles: {
-    roles: [
+  orderIds: {
+    items: [
       {
-        type: String,
+        orderId: {
+          type: Schema.Types.ObjectId,
+          ref: "Order",
+          required: true,
+        },
       },
     ],
   },
-  Blacklisted: {
-    type: Boolean,
-    default: false,
-  },
-  history: {
+  rateIds: {
     items: [
       {
-        action: {
-          type: String,
-        },
-        productId: {
+        rateId: {
           type: Schema.Types.ObjectId,
-          ref: "Product",
+          ref: "Rating",
           required: true,
         },
-        date: {
-          type: Date,
+      },
+    ],
+  },
+  historyIds: {
+    items: [
+      {
+        historyId: {
+          type: Schema.Types.ObjectId,
+          ref: "History",
+          required: true,
+        },
+      },
+    ],
+  },
+  roleIds: {
+    items: [
+      {
+        roleId: {
+          type: Schema.Types.ObjectId,
+          ref: "Role",
+          required: true,
+        },
+      },
+    ],
+  },
+  favoriteIds: {
+    items: [
+      {
+        favoriteId: {
+          type: Schema.Types.ObjectId,
+          ref: "Favorite",
+          required: true,
+        },
+      },
+    ],
+  },
+  invoiceIds: {
+    items: [
+      {
+        invoiceId: {
+          type: Schema.Types.ObjectId,
+          ref: "Invoice",
           required: true,
         },
       },

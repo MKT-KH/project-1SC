@@ -39,23 +39,9 @@ const ProductSchema = new Schema({
     type: Number,
     default: 0,
   },
-  allRate: {
-    rating: [
-      {
-        userId: {
-          type: mongoose.Types.ObjectId,
-        },
-        ratingValue: {
-          type: Number,
-        },
-        ratingDate: {
-          type: Date,
-        },
-      },
-    ],
-  },
   rate: {
     type: Number,
+    // required:true
   },
   discount: {
     type: Number,

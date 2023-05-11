@@ -8,6 +8,7 @@ cloudinary = require("cloudinary");
 const Product = require("../models/product");
 const Order = require("../models/order");
 const User = require("../models/user");
+const Role = require("../models/role");
 
 const transport = nodemailer.createTransport(
   sendGridTransport({
@@ -509,6 +510,7 @@ exports.ChangeEtatUser = async (req, res, next) => {
 exports.createAdmin = async (req, res, next) => {
   const userId = req.params.userId;
   const adminRoles = req.body.adminRoles;
+
   try {
     await permission(req.userId, roleForSuperAdmin);
     const user = await User.findById(userId);
@@ -518,8 +520,17 @@ exports.createAdmin = async (req, res, next) => {
       return next(err);
     }
     user.isAdmin = true;
-    user.adminRoles.roles = adminRoles;
     await user.save();
+    for (const item of adminRoles) {
+      const role = new Role({
+        userId: userId,
+        role: item,
+      });
+      await role.save();
+      user.roleIds.items.push({ roleId: role.id });
+      await user.save();
+    }
+
     res.status(200).json({
       message: "the admin is created succesflyy",
       admin: user,
@@ -636,9 +647,12 @@ exports.addDiscount = async (req, res, next) => {
 };
 
 const permission = async (userId, ...roles) => {
-  const admin = await User.findById(userId);
-  const userRoles = admin.adminRoles.roles;
-  const existRoles = roles.some((role) => userRoles.includes(role));
+  const rolesForAdmin = await Role.find({ userId: userId });
+  const theRolesForAdmin = rolesForAdmin.map((item) => {
+    return item.role;
+  });
+
+  const existRoles = roles.some((role) => theRolesForAdmin.includes(role));
   if (!existRoles) {
     const err = new Error("This admin is not permitted to do this task");
     err.status = 403;

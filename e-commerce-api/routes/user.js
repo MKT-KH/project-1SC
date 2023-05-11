@@ -23,7 +23,7 @@ router.put("/cart/:userId", isAuth, userControllers.updateCart);
 router.get("/cart", isAuth, userControllers.getCart);
 router.delete("/cart/:cartId", isAuth, userControllers.deleteCart);
 router.post("/order", isAuth, userControllers.postorder);
-router.delete("/order/:orderId", isAuth, userControllers.delteOrder);
+//router.delete("/order/:orderId", isAuth, userControllers.delteOrder);
 router.post("/favorites/:productId", isAuth, userControllers.addToFavorites);
 router.get("/favorites", isAuth, userControllers.getFavorites);
 router.delete(
@@ -32,7 +32,7 @@ router.delete(
   userControllers.deleteFromFavorites
 );
 router.post("/product/:productId", isAuth, userControllers.addRating);
-router.get("/history", isAuth, userControllers.getHistoric);
+router.get("/history/:userId", isAuth, userControllers.getHistoric);
 router.get("/user-info/:userId", isAuth, userControllers.getInfoAboutUser);
 router.delete("/history", isAuth, userControllers.clearHistory);
 module.exports = router;

@@ -8,7 +8,7 @@ module.exports = async (req, res, next) => {
     next(error);
   }
   if (!user.isAdmin) {
-    const error = new Error("admin authorization");
+    const error = new Error("admin authorization you are not admin");
     error.status = 401;
     next(error);
   }
