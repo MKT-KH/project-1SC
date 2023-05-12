@@ -513,21 +513,35 @@ exports.createAdmin = async (req, res, next) => {
   const adminRoles = req.body.adminRoles;
 
   try {
-    await permission(req.userId, roleForSuperAdmin);
+    //await permission(req.userId, roleForSuperAdmin);
     const user = await User.findById(userId);
     if (!user) {
       const err = new Error("no user found");
       err.status = 404;
       return next(err);
     }
-    user.isAdmin = true;
-    await user.save();
+    const roles = await Role.find({ userId: userId });
+    if (roles) {
+      for (const role of roles) {
+        for (let i = 0; i < adminRoles.length; i++) {
+          if (role.role === adminRoles[i]) {
+            const err = new Error(
+              `this admin is alredy have ${role.role} role`
+            );
+            err.status = 404;
+            return next(err);
+          }
+        }
+      }
+    }
     for (const item of adminRoles) {
       const role = new Role({
         userId: userId,
         role: item,
       });
+
       await role.save();
+      user.isAdmin = true;
       user.roleIds.items.push({ roleId: role.id });
       await user.save();
     }
