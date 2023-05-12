@@ -513,7 +513,7 @@ exports.createAdmin = async (req, res, next) => {
   const adminRoles = req.body.adminRoles;
 
   try {
-    //await permission(req.userId, roleForSuperAdmin);
+    await permission(req.userId, roleForSuperAdmin);
     const user = await User.findById(userId);
     if (!user) {
       const err = new Error("no user found");
