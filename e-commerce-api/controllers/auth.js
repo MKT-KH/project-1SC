@@ -157,7 +157,9 @@ exports.login = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email }).populate(
+      "roleIds.items.roleId"
+    );
     if (!user) {
       const error = new Error("no user found");
       error.status = 404;
