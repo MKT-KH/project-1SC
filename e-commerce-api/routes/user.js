@@ -35,8 +35,14 @@ router.get("/user-info/:userId", isAuth, userControllers.getInfoAboutUser);
 router.delete("/history", isAuth, userControllers.clearHistory);
 router.post(
   "/comment",
-  [body("comment").isLength({ min: 5, max: 25 })],
+  [
+    body("comment")
+      .isLength({ min: 5, max: 25 })
+      .withMessage("Sorry, it looks like your comment is too long"),
+  ],
   isAuth,
   userControllers.addComment
 );
+router.post("/club", isAuth, userControllers.joinClub);
+router.delete("/club", isAuth, userControllers.leaveClub);
 module.exports = router;

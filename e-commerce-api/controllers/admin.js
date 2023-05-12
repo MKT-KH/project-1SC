@@ -9,6 +9,7 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 const User = require("../models/user");
 const Role = require("../models/role");
+const Club = require("../models/club");
 
 const transport = nodemailer.createTransport(
   sendGridTransport({
@@ -563,12 +564,12 @@ exports.addDiscount = async (req, res, next) => {
     }
     product.discount = discount;
     await product.save();
-    const users = await User.find();
-    for (const user of users) {
+    const club = await Club.find().populate("userId");
+    for (const memberOfClub of club) {
       transport.sendMail({
-        to: user.email,
+        to: memberOfClub.userId.email,
         from: process.env.SENDER_EMAIL,
-        subject: "Please Verify Your Account",
+        subject: `Exclusive deal: ${product.discount}% off ${product.name}!`,
         html: `
         <html>
         <head>

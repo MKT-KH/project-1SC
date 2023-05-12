@@ -12,6 +12,7 @@ const Rating = require("../models/rating");
 const Favorite = require("../models/favorite");
 const History = require("../models/history");
 const Comment = require("../models/comment");
+const Club = require("../models/club");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -873,6 +874,75 @@ exports.addComment = async (req, res, next) => {
       message: "your comment is added ",
       comment: comment,
     });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.joinClub = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId.toString()) {
+      const error = new Error("not authorized");
+      error.status = 403;
+      return next(error);
+    }
+    const club = await Club.findOne({ userId: userId });
+    if (club) {
+      const err = new Error(" you are already in the club");
+      err.status = 409;
+      return next(err);
+    }
+    const newClub = new Club({
+      userId: userId,
+    });
+    await newClub.save();
+    user.isMemberClub = true;
+    await user.save();
+    res.status(201).json({
+      message: "you joined club succssuflyy",
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.leaveClub = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId.toString()) {
+      const error = new Error("not authorized");
+      error.status = 403;
+      return next(error);
+    }
+    const club = await Club.findOne({ userId: userId });
+    if (!club) {
+      const err = new Error("you are not member at club");
+      err.status = 404;
+      return next(err);
+    }
+    await Club.findByIdAndRemove(club.id);
+    user.isMemberClub = false;
+    await user.save();
+    res.status(200).json({ message: "you leaved the club" });
   } catch (err) {
     if (!err.status) {
       err.status = 500;
