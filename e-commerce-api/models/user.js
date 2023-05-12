@@ -107,6 +107,17 @@ const UserSchema = new Schema({
       },
     ],
   },
+  commentIds: {
+    items: [
+      {
+        commentId: {
+          type: Schema.Types.ObjectId,
+          ref: "Comment",
+          required: true,
+        },
+      },
+    ],
+  },
 });
 
 module.exports = mongoose.model("User", UserSchema);

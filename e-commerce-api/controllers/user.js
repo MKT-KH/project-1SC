@@ -1,6 +1,8 @@
 const path = require("path");
+
 const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcryptjs");
+const { validationResult } = require("express-validator/check");
 
 const Cart = require("../models/cart");
 const User = require("../models/user");
@@ -9,6 +11,7 @@ const Order = require("../models/order");
 const Rating = require("../models/rating");
 const Favorite = require("../models/favorite");
 const History = require("../models/history");
+const Comment = require("../models/comment");
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -803,6 +806,11 @@ exports.clearHistory = async (req, res, next) => {
       err.status = 404;
       return next(err);
     }
+    if (user._id.toString() !== userId.toString()) {
+      const error = new Error("not authorized");
+      error.status = 403;
+      return next(error);
+    }
 
     const historys = await History.find({ userId: userId });
     if (!historys) {
@@ -823,6 +831,48 @@ exports.clearHistory = async (req, res, next) => {
         message: "the history is deleted for this user",
       });
     }
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.addComment = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error("the input are invalid");
+    error.status = 422;
+    error.data = errors.array();
+    return next(error);
+  }
+
+  const userId = req.userId;
+  const comment = req.body.comment;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId.toString()) {
+      const error = new Error("not authorized");
+      error.status = 403;
+      return next(error);
+    }
+    const newComment = new Comment({
+      userId: userId,
+      comment: comment,
+    });
+    await newComment.save();
+    user.commentIds.items.push({ commentId: newComment.id });
+    await user.save();
+    res.status(201).json({
+      message: "your comment is added ",
+      comment: comment,
+    });
   } catch (err) {
     if (!err.status) {
       err.status = 500;

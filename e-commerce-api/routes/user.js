@@ -3,14 +3,12 @@ const { body } = require("express-validator/check");
 const multer = require("multer");
 
 const storage = require("../config/cloudinary");
+const userControllers = require("../controllers/user");
+const isAuth = require("../middleware/is-auth");
 
 const upload = multer({ storage: storage.storageProfileImages });
 
 const router = express.Router();
-
-const userControllers = require("../controllers/user");
-const isAuth = require("../middleware/is-auth");
-const { compare } = require("bcryptjs");
 
 router.put("/edit", upload.single("image"), isAuth, userControllers.editUser);
 router.post("/cart/:productId", isAuth, userControllers.addToCart);
@@ -35,4 +33,10 @@ router.post("/product/:productId", isAuth, userControllers.addRating);
 router.get("/history/:userId", isAuth, userControllers.getHistoric);
 router.get("/user-info/:userId", isAuth, userControllers.getInfoAboutUser);
 router.delete("/history", isAuth, userControllers.clearHistory);
+router.post(
+  "/comment",
+  [body("comment").isLength({ min: 5, max: 25 })],
+  isAuth,
+  userControllers.addComment
+);
 module.exports = router;
