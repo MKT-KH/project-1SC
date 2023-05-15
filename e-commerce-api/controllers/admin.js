@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator/check");
 const nodemailer = require("nodemailer");
 const sendGridTransport = require("nodemailer-sendgrid-transport");
 
-cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 
 const Product = require("../models/product");
 const Order = require("../models/order");

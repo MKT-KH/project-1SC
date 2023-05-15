@@ -1,8 +1,10 @@
 const path = require("path");
+const fs = require("fs");
 
 const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator/check");
+const PDFDocument = require("pdfkit");
 
 const Cart = require("../models/cart");
 const User = require("../models/user");
@@ -13,6 +15,14 @@ const Favorite = require("../models/favorite");
 const History = require("../models/history");
 const Comment = require("../models/comment");
 const Club = require("../models/club");
+const Invoice = require("../models/invoice");
+const user = require("../models/user");
+
+cloudinary.config({
+  api_key: process.env.CLOUDIANRY_API_KEY,
+  api_secret: process.env.CLOUDIANRY_SECRET_KEY,
+  cloud_name: process.env.CLOUDIANRY_CLOUD_NAME,
+});
 
 exports.editUser = async (req, res, next) => {
   const updatedName = req.body.updatedName;
@@ -950,3 +960,177 @@ exports.leaveClub = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.createInvoice = async (req, res, next) => {
+  const userId = req.userId;
+  const orderId = req.params.orderId;
+  try {
+    const user = await User.findById(userId).populate(
+      "invoiceIds.items.invoiceId"
+    );
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user._id.toString() !== userId.toString()) {
+      const error = new Error("not authorized");
+      error.status = 403;
+      return next(error);
+    }
+    //generateInvoice(userId, orderId);
+
+    const order = await Order.findById(orderId).populate("userId"); //.populate("products.productId");
+    if (!order) {
+      const err = new Error("No order found");
+      err.status = 404;
+      throw err;
+    }
+
+    // Create a new PDF document
+    const doc = new PDFDocument();
+
+    // Set the font sizes
+    const headerFontSize = 18;
+    const subheaderFontSize = 14;
+    const normalFontSize = 12;
+
+    // Add content and styling to the PDF document
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(headerFontSize)
+      .text("Invoice", { align: "center" });
+
+    doc.moveDown();
+    doc.font("Helvetica").fontSize(subheaderFontSize);
+
+    // Add user's details to the invoice
+    doc.text("User: " + order.userId.name, { align: "left" });
+
+    // Add order details to the invoice
+    doc.text("Order Date: " + order.orderDate, { align: "left" });
+    doc.text("Order Status: " + order.orderstatus, { align: "left" });
+
+    doc.moveDown();
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(subheaderFontSize)
+      .text("Items:", { align: "left" });
+
+    doc.moveDown();
+    doc.font("Helvetica").fontSize(normalFontSize);
+
+    // Calculate the maximum width of each column
+    const columnWidths = [
+      0.6 * doc.page.width,
+      0.2 * doc.page.width,
+      0.2 * doc.page.width,
+    ];
+
+    // Print the table header
+    doc.text("Item", columnWidths[0], doc.y, { align: "left" });
+    doc.text("Quantity", columnWidths[1], doc.y, { align: "right" });
+    doc.text("Price", columnWidths[2], doc.y, { align: "right" });
+
+    doc.moveDown();
+    doc.font("Helvetica").fontSize(normalFontSize);
+
+    // Print each row of the table
+    const products = order.products;
+    for (const product of products) {
+      const productDatabase = await Product.findById(product.productId);
+      doc.text(productDatabase.name, columnWidths[0], doc.y, { align: "left" });
+      doc.text(product.quantity.toString(), columnWidths[1], doc.y, {
+        align: "right",
+      });
+      const totalePrice = productDatabase.price * product.quantity;
+      doc.text(totalePrice.toFixed(2), columnWidths[2], doc.y, {
+        align: "right",
+      });
+      doc.moveDown();
+    }
+
+    // Calculate the total amount
+    let totalAmount = 0;
+    for (const product of products) {
+      const productDatabase = await Product.findById(product.productId);
+      totalAmount = totalAmount + product.quantity * productDatabase.price;
+    }
+
+    doc.moveDown();
+    doc
+      .font("Helvetica-Bold")
+      .fontSize(subheaderFontSize)
+      .text("Total:", { align: "right" });
+    doc.text("$" + totalAmount.toFixed(2), { align: "right" });
+
+    doc.pipe(
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: "raw",
+          folder: "invoices",
+          public_id:
+            userId + new Date().toISOString() + "-" + "invoice" + ".pdf",
+        },
+        async (error, result) => {
+          if (error) {
+            console.error("Error uploading invoice to Cloudinary:", error);
+          } else {
+            console.log("Invoice uploaded to Cloudinary:", result.url);
+            const newInvoice = new Invoice({
+              userId: userId,
+              invoiceUrl: result.url,
+            });
+            await newInvoice.save();
+            user.invoiceIds.items.push({ invoiceId: newInvoice.id });
+            await user.save();
+            return res.status(201).json({
+              message: "the invoice is created",
+              invoiceUrl: result.url,
+            });
+          }
+        }
+      )
+    );
+
+    doc.end();
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+// exports.getInvoice = async (req, res, next) => {
+//   const userId = req.userId;
+//   const invoiceId = req.params.invoiceId;
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       const err = new Error("no user found");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     if (user._id.toString() !== userId.toString()) {
+//       const error = new Error("not authorized");
+//       error.status = 403;
+//       return next(error);
+//     }
+//     const invoice = await Invoice.findOne({userId:userId});
+//     if (!invoice) {
+//       const err = new Error("no invoice found");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     res.status(200).json({
+//       message: "the invoice",
+//       invoice: invoice.invoiceUrl,
+//     });
+//   } catch (err) {
+//     if (!err.status) {
+//       err.status = 500;
+//     }
+//     next(err);
+//   }
+// };

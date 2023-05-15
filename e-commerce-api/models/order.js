@@ -17,7 +17,7 @@ const orderSchema = new Schema({
   ],
   userId: {
     type: mongoose.Types.ObjectId,
-    ref: "user",
+    ref: "User",
   },
   orderstatus: {
     default: "pending",

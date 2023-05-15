@@ -45,4 +45,6 @@ router.post(
 );
 router.post("/club", isAuth, userControllers.joinClub);
 router.delete("/club", isAuth, userControllers.leaveClub);
+router.post("/invoice/:orderId", isAuth, userControllers.createInvoice);
+//router.get("/invoice/:invoiceId",isAuth,userControllers.getInvoice);
 module.exports = router;

@@ -17,11 +17,23 @@ exports.storageProfileImages = new CloudinaryStorage({
     },
   },
 });
+
 exports.storageProductImages = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "productImages",
     allowed_formats: ["jpg", "png", "jpeg"],
+    public_id: (req, file) => {
+      return new Date().toISOString() + "-" + file.originalname;
+    },
+  },
+});
+
+exports.storageInvoices = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "invoicePdfs",
+    allowed_formats: ["pdf"],
     public_id: (req, file) => {
       return new Date().toISOString() + "-" + file.originalname;
     },

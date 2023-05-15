@@ -9,6 +9,7 @@ const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const userRoutes = require("./routes/user");
+const stripeRoutes = require("./routes/stripe");
 
 const app = express();
 
@@ -18,6 +19,7 @@ const store = new MongoDBStore({
 });
 
 app.set("view engine", "ejs");
+app.use(stripeRoutes);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use((req, res, next) => {
