@@ -28,14 +28,3 @@ exports.storageProductImages = new CloudinaryStorage({
     },
   },
 });
-
-exports.storageInvoices = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "invoicePdfs",
-    allowed_formats: ["pdf"],
-    public_id: (req, file) => {
-      return new Date().toISOString() + "-" + file.originalname;
-    },
-  },
-});

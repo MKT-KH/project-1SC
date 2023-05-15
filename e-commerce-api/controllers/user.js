@@ -448,51 +448,51 @@ exports.updateCart = async (req, res, next) => {
   }
 };
 
-exports.postorder = async (req, res, next) => {
-  const userId = req.userId;
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      const err = new Error("no user found");
-      err.status = 404;
-      return next(err);
-    }
-    if (user._id.toString() !== req.userId.toString()) {
-      const error = new Error("not authorized");
-      error.status = 403;
-      return next(error);
-    }
-    const cartId = user.cartId;
-    const cart = await Cart.findById(cartId);
-    if (!cart) {
-      const err = new Error("no cart found for this user");
-      err.status = 404;
-      return next(err);
-    }
-    const products = cart.items.map((item) => {
-      return { productId: item.productId, quantity: item.quantity };
-    });
-    const order = new Order({
-      products: products,
-      userId: userId,
-      orderDate: new Date(),
-    });
-    await order.save();
-    cart.items = [];
-    await cart.save();
-    user.orderIds.items.push({ orderId: order.id });
-    await user.save();
-    res.status(201).json({
-      message: "order create succsuflyy",
-      order: order,
-    });
-  } catch (err) {
-    if (!err.status) {
-      err.status = 500;
-    }
-    next(err);
-  }
-};
+// exports.postorder = async (req, res, next) => {
+//   const userId = req.userId;
+//   try {
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       const err = new Error("no user found");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     if (user._id.toString() !== req.userId.toString()) {
+//       const error = new Error("not authorized");
+//       error.status = 403;
+//       return next(error);
+//     }
+//     const cartId = user.cartId;
+//     const cart = await Cart.findById(cartId);
+//     if (!cart) {
+//       const err = new Error("no cart found for this user");
+//       err.status = 404;
+//       return next(err);
+//     }
+//     const products = cart.items.map((item) => {
+//       return { productId: item.productId, quantity: item.quantity };
+//     });
+//     const order = new Order({
+//       products: products,
+//       userId: userId,
+//       orderDate: new Date(),
+//     });
+//     await order.save();
+//     cart.items = [];
+//     await cart.save();
+//     user.orderIds.items.push({ orderId: order.id });
+//     await user.save();
+//     res.status(201).json({
+//       message: "order create succsuflyy",
+//       order: order,
+//     });
+//   } catch (err) {
+//     if (!err.status) {
+//       err.status = 500;
+//     }
+//     next(err);
+//   }
+// };
 
 // exports.delteOrder = async (req, res, next) => {
 //   const orderId = req.params.orderId;

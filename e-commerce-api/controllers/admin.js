@@ -469,7 +469,7 @@ exports.getProductsForType = async (req, res, next) => {
 exports.getUsers = async (req, res, next) => {
   try {
     await permission(req.userId, roleForSuperAdmin, roleForUsers);
-    const users = await User.find();
+    const users = await User.find().populate("roleIds.items.roleId");
     res.status(200).json({
       message: "users",
       users: users,
