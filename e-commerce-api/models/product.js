@@ -47,6 +47,17 @@ const ProductSchema = new Schema({
     type: Number,
     default: 0,
   },
+  commentsIds: {
+    items: [
+      {
+        commentId: {
+          type: Schema.Types.ObjectId,
+          ref: "Comment",
+          required: true,
+        },
+      },
+    ],
+  },
 });
 
 module.exports = mongoose.model("Product", ProductSchema);

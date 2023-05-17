@@ -11,6 +11,11 @@ const commentSchema = new Schema({
     required: true,
     ref: "User",
   },
+  productId: {
+    type: mongoose.Types.ObjectId,
+    required: true,
+    ref: "Product",
+  },
 });
 
 module.exports = mongoose.model("Comment", commentSchema);

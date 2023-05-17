@@ -34,7 +34,7 @@ router.get("/history/:userId", isAuth, userControllers.getHistoric);
 router.get("/user-info/:userId", isAuth, userControllers.getInfoAboutUser);
 router.delete("/history", isAuth, userControllers.clearHistory);
 router.post(
-  "/comment",
+  "/comment/:productId",
   [
     body("comment")
       .isLength({ min: 5, max: 25 })

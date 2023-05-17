@@ -861,6 +861,7 @@ exports.addComment = async (req, res, next) => {
   }
 
   const userId = req.userId;
+  const productId = req.params.productId;
   const comment = req.body.comment;
   try {
     const user = await User.findById(userId);
@@ -874,11 +875,20 @@ exports.addComment = async (req, res, next) => {
       error.status = 403;
       return next(error);
     }
+    const product = await Product.findById(productId);
+    if (!product) {
+      const err = new Error("no product found");
+      err.status = 404;
+      return next(err);
+    }
     const newComment = new Comment({
       userId: userId,
       comment: comment,
+      productId: product.id,
     });
     await newComment.save();
+    product.commentsIds.items.push({ commentId: newComment.id });
+    await product.save();
     user.commentIds.items.push({ commentId: newComment.id });
     await user.save();
     res.status(201).json({
@@ -1026,50 +1036,52 @@ exports.createInvoice = async (req, res, next) => {
 
     doc.moveDown();
     doc.font("Helvetica").fontSize(normalFontSize);
-
     // Calculate the maximum width of each column
     const columnWidths = [
-      0.6 * doc.page.width,
-      0.2 * doc.page.width,
-      0.2 * doc.page.width,
+      0.333 * doc.page.width,
+      0.333 * doc.page.width,
+      0.333 * doc.page.width,
     ];
 
     // Print the table header
-    doc.text("Item", columnWidths[0], doc.x, { align: "left" });
-    doc.text("Quantity", columnWidths[1], doc.x, { align: "left" });
-    doc.text("Price", columnWidths[2], doc.x, { align: "left" });
-
-    doc.moveDown();
-    doc.font("Helvetica").fontSize(normalFontSize);
+    doc.text("Item", 0, doc.y, { align: "left", width: columnWidths[0] });
+    doc.text("Quantity", columnWidths[0], doc.y, {
+      align: "center",
+      width: columnWidths[1],
+    });
+    doc.text("Price", columnWidths[0] + columnWidths[1], doc.y, {
+      align: "right",
+      width: columnWidths[2],
+    });
 
     // Print each row of the table
-    const products = order.products;
-    for (const product of products) {
-      const productDatabase = await Product.findById(product.productId);
-      doc.text(productDatabase.name, columnWidths[0], doc.x, { align: "left" });
-      doc.text(product.quantity.toString(), columnWidths[1], doc.x, {
-        align: "left",
-      });
-      const totalePrice = productDatabase.price * product.quantity;
-      doc.text(totalePrice.toFixed(2), columnWidths[2], doc.x, {
-        align: "left",
-      });
-      doc.moveDown();
-    }
+    // const products = order.products;
+    // for (const product of products) {
+    //   const productDatabase = await Product.findById(product.productId);
+    //   doc.text(productDatabase.name, columnWidths[0], doc.x, { align: "left" });
+    //   doc.text(product.quantity.toString(), columnWidths[1], doc.x, {
+    //     align: "left",
+    //   });
+    //   const totalePrice = productDatabase.price * product.quantity;
+    //   doc.text(totalePrice.toFixed(2), columnWidths[2], doc.x, {
+    //     align: "left",
+    //   });
+    //   doc.moveDown();
+    // }
 
-    // Calculate the total amount
-    let totalAmount = 0;
-    for (const product of products) {
-      const productDatabase = await Product.findById(product.productId);
-      totalAmount = totalAmount + product.quantity * productDatabase.price;
-    }
+    // // Calculate the total amount
+    // let totalAmount = 0;
+    // for (const product of products) {
+    //   const productDatabase = await Product.findById(product.productId);
+    //   totalAmount = totalAmount + product.quantity * productDatabase.price;
+    // }
 
-    doc.moveDown();
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(subheaderFontSize)
-      .text("Total:", { align: "right" });
-    doc.text("$" + totalAmount.toFixed(2), { align: "right" });
+    // doc.moveDown();
+    // doc
+    //   .font("Helvetica-Bold")
+    //   .fontSize(subheaderFontSize)
+    //   .text("Total:", { align: "right" });
+    // doc.text("$" + totalAmount.toFixed(2), { align: "right" });
 
     doc.pipe(
       cloudinary.uploader.upload_stream(

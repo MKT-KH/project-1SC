@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const Comment = require("../models/comment");
 
 exports.getProducts = async (req, res, next) => {
   try {
@@ -81,4 +82,23 @@ exports.getTypes = async (req, res, next) => {
   }
 };
 
-exports.getComment = () => {};
+exports.getComments = async (req, res, next) => {
+  const productId = req.params.productId;
+  try {
+    const comments = await Comment.find({ productId: productId });
+    if (!comments) {
+      const err = new Error("no comment found for this product");
+      err.status = 404;
+      return next(err);
+    }
+    res.status(200).json({
+      message: "all the comments about this product",
+      comments: comments,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
