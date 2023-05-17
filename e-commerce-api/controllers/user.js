@@ -419,6 +419,7 @@ exports.deleteFromCart = async (req, res, next) => {
 exports.updateCart = async (req, res, next) => {
   const cartItem = req.body.cartItem.items;
   const userId = req.params.userId;
+  console.log("hh");
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -436,7 +437,7 @@ exports.updateCart = async (req, res, next) => {
     cart.items = cartItem;
 
     await cart.save();
-    res.status(404).json({
+    res.status(200).json({
       message: "the cart is updated",
       cart: cart,
     });
