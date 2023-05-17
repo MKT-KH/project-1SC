@@ -81,7 +81,7 @@ exports.editUser = async (req, res, next) => {
       user.password = hashedPassword;
     }
     if (updatedName) {
-      if (updatedPassword.length < 4) {
+      if (updatedName.length < 4) {
         const error = new Error("the name is at least 4 charchter");
         error.status = 422;
         return next(error);
@@ -988,7 +988,7 @@ exports.createInvoice = async (req, res, next) => {
     }
 
     // Create a new PDF document
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ margin: 50 });
 
     // Set the font sizes
     const headerFontSize = 18;
@@ -1005,9 +1005,15 @@ exports.createInvoice = async (req, res, next) => {
     doc.font("Helvetica").fontSize(subheaderFontSize);
 
     // Add user's details to the invoice
-    doc.text("User: " + order.userId.name, { align: "left" });
+    doc.text("Customer: " + order.userId.name, { align: "left" });
 
     // Add order details to the invoice
+    // const originalTimestamp = new Date(order.orderDate);
+    // const updatedTimestamp = originalTimestamp.toLocaleString("en-US", {
+    //   timeZone: "local",
+    // });
+
+    // console.log(updatedTimestamp);
     doc.text("Order Date: " + order.orderDate, { align: "left" });
     doc.text("Order Status: " + order.orderstatus, { align: "left" });
 
@@ -1028,9 +1034,9 @@ exports.createInvoice = async (req, res, next) => {
     ];
 
     // Print the table header
-    doc.text("Item", columnWidths[0], doc.y, { align: "left" });
-    doc.text("Quantity", columnWidths[1], doc.y, { align: "right" });
-    doc.text("Price", columnWidths[2], doc.y, { align: "right" });
+    doc.text("Item", columnWidths[0], doc.x, { align: "left" });
+    doc.text("Quantity", columnWidths[1], doc.x, { align: "left" });
+    doc.text("Price", columnWidths[2], doc.x, { align: "left" });
 
     doc.moveDown();
     doc.font("Helvetica").fontSize(normalFontSize);
@@ -1039,13 +1045,13 @@ exports.createInvoice = async (req, res, next) => {
     const products = order.products;
     for (const product of products) {
       const productDatabase = await Product.findById(product.productId);
-      doc.text(productDatabase.name, columnWidths[0], doc.y, { align: "left" });
-      doc.text(product.quantity.toString(), columnWidths[1], doc.y, {
-        align: "right",
+      doc.text(productDatabase.name, columnWidths[0], doc.x, { align: "left" });
+      doc.text(product.quantity.toString(), columnWidths[1], doc.x, {
+        align: "left",
       });
       const totalePrice = productDatabase.price * product.quantity;
-      doc.text(totalePrice.toFixed(2), columnWidths[2], doc.y, {
-        align: "right",
+      doc.text(totalePrice.toFixed(2), columnWidths[2], doc.x, {
+        align: "left",
       });
       doc.moveDown();
     }

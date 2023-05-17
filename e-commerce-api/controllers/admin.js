@@ -28,15 +28,6 @@ const roleForSuperAdmin = "superAdmin";
 //  "adminRoles": ["superAdmin", "product management", "users management", "orders management", "statistics management"]
 //}
 
-//with req.userId find the user and see the roles tables and see if it permemited to do somthing like creation
-//find the user and compare with each roles i the table
-//roles : creation product , see the staticts , block and deblock users , cancel a command
-//gestion product(create delte , edit) management product
-//gestion users(block users deblock users and )  users management
-//superadmin(have all the acess and have addition role that is create admins and give them the roles )
-//gestion orders(cancell them)  orders management
-//gestion statics  statistics management
-
 exports.createProduct = async (req, res, next) => {
   const name = req.body.name;
   const price = req.body.price;
@@ -445,6 +436,7 @@ exports.getInformationABoutProducts = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.getProductsForType = async (req, res, next) => {
   const type = req.params.type;
   try {
@@ -466,9 +458,10 @@ exports.getProductsForType = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.getUsers = async (req, res, next) => {
   try {
-    await permission(req.userId, roleForSuperAdmin, roleForUsers);
+    // await permission(req.userId, roleForSuperAdmin, roleForUsers);
     const users = await User.find().populate("roleIds.items.roleId");
     res.status(200).json({
       message: "users",
@@ -481,6 +474,7 @@ exports.getUsers = async (req, res, next) => {
     next(err);
   }
 };
+
 exports.ChangeEtatUser = async (req, res, next) => {
   const userId = req.params.userId;
   const userEtat = req.body.etat;

@@ -41,17 +41,6 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Cart",
   },
-  orderIds: {
-    items: [
-      {
-        orderId: {
-          type: Schema.Types.ObjectId,
-          ref: "Order",
-          //required: true,
-        },
-      },
-    ],
-  },
   rateIds: {
     items: [
       {
@@ -59,6 +48,17 @@ const UserSchema = new Schema({
           type: Schema.Types.ObjectId,
           ref: "Rating",
           required: true,
+        },
+      },
+    ],
+  },
+  orderIds: {
+    items: [
+      {
+        orderId: {
+          type: Schema.Types.ObjectId,
+          ref: "Order",
+          // required: true,
         },
       },
     ],
