@@ -80,3 +80,5 @@ exports.getTypes = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getComment = () => {};

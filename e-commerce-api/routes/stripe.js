@@ -26,6 +26,7 @@ const postOrder = async (userID) => {
     const products = cart.items.map((item) => {
       return { productId: item.productId, quantity: item.quantity };
     });
+    console.log(products);
     const order = new Order({
       products: products,
       userId: userId,

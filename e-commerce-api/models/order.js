@@ -28,6 +28,10 @@ const orderSchema = new Schema({
     type: Date,
     required: true,
   },
+  // orderAdress: {
+  //   type: String,
+  //   required: true,
+  // },
 });
 
 module.exports = mongoose.model("Order", orderSchema);
