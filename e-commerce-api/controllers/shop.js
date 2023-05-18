@@ -51,21 +51,6 @@ exports.getTypes = async (req, res, next) => {
       const numberOfProducts = await Product.countDocuments({ type: type });
       typesCount.push({ type: type, count: numberOfProducts });
     }
-    // const typesCount = await Product.aggregate([
-    //   {
-    //     $group: {
-    //       _id: "$type",
-    //       count: { $sum: 1 },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       type: "$_id",
-    //       count: 1,
-    //     },
-    //   },
-    // ]);
 
     const totalProducts = await Product.find().countDocuments();
     res.status(200).json({
@@ -86,7 +71,7 @@ exports.getComments = async (req, res, next) => {
   const productId = req.params.productId;
   try {
     const comments = await Comment.find({ productId: productId });
-    if (!comments) {
+    if (comments.length < 1) {
       const err = new Error("no comment found for this product");
       err.status = 404;
       return next(err);

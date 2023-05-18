@@ -989,9 +989,8 @@ exports.createInvoice = async (req, res, next) => {
       error.status = 403;
       return next(error);
     }
-    //generateInvoice(userId, orderId);
 
-    const order = await Order.findById(orderId).populate("userId"); //.populate("products.productId");
+    const order = await Order.findById(orderId).populate("userId");
     if (!order) {
       const err = new Error("No order found");
       err.status = 404;
@@ -1006,7 +1005,7 @@ exports.createInvoice = async (req, res, next) => {
     doc
       .font("Helvetica-Bold")
       .fontSize(headerFontSize)
-      .text("Invoice", { align: "center" });
+      .text("Order Invoice", { align: "center" });
 
     doc.moveDown();
     doc.font("Helvetica").fontSize(subheaderFontSize);
@@ -1021,8 +1020,8 @@ exports.createInvoice = async (req, res, next) => {
       second: "numeric",
     });
 
-    doc.text("Customer     :  " + order.userId.name, { align: "left" });
-    doc.text("Order Date   :  " + formattedDate, { align: "left" });
+    doc.text("Customer :  " + order.userId.name, { align: "left" });
+    doc.text("Date     :  " + formattedDate, { align: "left" });
     doc.text("Order Status :  " + order.orderstatus, { align: "left" });
     doc.moveDown();
 
@@ -1066,7 +1065,7 @@ exports.createInvoice = async (req, res, next) => {
           resource_type: "raw",
           folder: "invoices",
           public_id:
-            userId + new Date().toISOString() + "-" + "invoice" + ".pdf",
+            "invoice-" + userId + "-" + new Date().toISOString() + "-" + ".pdf",
         },
         async (error, result) => {
           if (error) {
