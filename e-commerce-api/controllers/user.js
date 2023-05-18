@@ -998,12 +998,10 @@ exports.createInvoice = async (req, res, next) => {
       throw err;
     }
 
-    // Create a new PDF document
     const doc = new PDFDocument({ margin: 50 });
 
     const headerFontSize = 18;
     const subheaderFontSize = 14;
-    const normalFontSize = 12;
 
     doc
       .font("Helvetica-Bold")

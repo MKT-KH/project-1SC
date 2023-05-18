@@ -26,7 +26,6 @@ const postOrder = async (userID) => {
     const products = cart.items.map((item) => {
       return { productId: item.productId, quantity: item.quantity };
     });
-    console.log(products);
     const order = new Order({
       products: products,
       userId: userId,
@@ -34,7 +33,7 @@ const postOrder = async (userID) => {
     });
     await order.save();
     cart.items = [];
-    user.orderIds.items.push(order._id);
+    user.orderIds.items.push(order.id);
     await user.save();
     await cart.save();
     // res.status(201).json({
