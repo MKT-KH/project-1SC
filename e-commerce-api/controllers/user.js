@@ -1001,12 +1001,10 @@ exports.createInvoice = async (req, res, next) => {
     // Create a new PDF document
     const doc = new PDFDocument({ margin: 50 });
 
-    // Set the font sizes
     const headerFontSize = 18;
     const subheaderFontSize = 14;
     const normalFontSize = 12;
 
-    // Add content and styling to the PDF document
     doc
       .font("Helvetica-Bold")
       .fontSize(headerFontSize)
@@ -1015,73 +1013,54 @@ exports.createInvoice = async (req, res, next) => {
     doc.moveDown();
     doc.font("Helvetica").fontSize(subheaderFontSize);
 
-    // Add user's details to the invoice
-    doc.text("Customer: " + order.userId.name, { align: "left" });
+    const date = new Date(order.orderDate);
+    const formattedDate = date.toLocaleString("EN-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    });
 
-    // Add order details to the invoice
-    // const originalTimestamp = new Date(order.orderDate);
-    // const updatedTimestamp = originalTimestamp.toLocaleString("en-US", {
-    //   timeZone: "local",
-    // });
+    doc.text("Customer     :  " + order.userId.name, { align: "left" });
+    doc.text("Order Date   :  " + formattedDate, { align: "left" });
+    doc.text("Order Status :  " + order.orderstatus, { align: "left" });
+    doc.moveDown();
 
-    // console.log(updatedTimestamp);
-    doc.text("Order Date: " + order.orderDate, { align: "left" });
-    doc.text("Order Status: " + order.orderstatus, { align: "left" });
+    doc.font("Helvetica-Bold");
+    doc.text("PRODUCT", 110, 256, { width: 190 });
+    doc.text("QUANTITY", 300, 256, { width: 100 });
+    doc.text("PRICE", 400, 256, { width: 100 });
+    doc.text("TOTAL PRICE", 500, 256, { width: 100 });
+    doc.font("Helvetica");
+
+    let productNo = 1;
+    const products = order.products;
+    for (const product of products) {
+      let y = 256 + productNo * 20;
+      const productDatabase = await Product.findById(product.productId);
+      doc.text(productDatabase.name, 110, y, { width: 190 });
+      doc.text(product.quantity, 300, y, { width: 100 });
+      const totalePrice = productDatabase.price * product.quantity;
+      doc.text(productDatabase.price, 400, y, { width: 100 });
+      doc.text(totalePrice, 500, y, { width: 100 });
+      productNo++;
+      doc.moveDown();
+    }
+
+    let totalAmount = 0;
+    for (const product of products) {
+      const productDatabase = await Product.findById(product.productId);
+      totalAmount = totalAmount + product.quantity * productDatabase.price;
+    }
 
     doc.moveDown();
     doc
       .font("Helvetica-Bold")
       .fontSize(subheaderFontSize)
-      .text("Items:", { align: "left" });
-
-    doc.moveDown();
-    doc.font("Helvetica").fontSize(normalFontSize);
-    // Calculate the maximum width of each column
-    const columnWidths = [
-      0.333 * doc.page.width,
-      0.333 * doc.page.width,
-      0.333 * doc.page.width,
-    ];
-
-    // Print the table header
-    doc.text("Item", 0, doc.y, { align: "left", width: columnWidths[0] });
-    doc.text("Quantity", columnWidths[0], doc.y, {
-      align: "center",
-      width: columnWidths[1],
-    });
-    doc.text("Price", columnWidths[0] + columnWidths[1], doc.y, {
-      align: "right",
-      width: columnWidths[2],
-    });
-
-    // Print each row of the table
-    // const products = order.products;
-    // for (const product of products) {
-    //   const productDatabase = await Product.findById(product.productId);
-    //   doc.text(productDatabase.name, columnWidths[0], doc.x, { align: "left" });
-    //   doc.text(product.quantity.toString(), columnWidths[1], doc.x, {
-    //     align: "left",
-    //   });
-    //   const totalePrice = productDatabase.price * product.quantity;
-    //   doc.text(totalePrice.toFixed(2), columnWidths[2], doc.x, {
-    //     align: "left",
-    //   });
-    //   doc.moveDown();
-    // }
-
-    // // Calculate the total amount
-    // let totalAmount = 0;
-    // for (const product of products) {
-    //   const productDatabase = await Product.findById(product.productId);
-    //   totalAmount = totalAmount + product.quantity * productDatabase.price;
-    // }
-
-    // doc.moveDown();
-    // doc
-    //   .font("Helvetica-Bold")
-    //   .fontSize(subheaderFontSize)
-    //   .text("Total:", { align: "right" });
-    // doc.text("$" + totalAmount.toFixed(2), { align: "right" });
+      .text("Total:", { align: "right" });
+    doc.text("$" + totalAmount.toFixed(2), { align: "right" });
 
     doc.pipe(
       cloudinary.uploader.upload_stream(
@@ -1120,36 +1099,3 @@ exports.createInvoice = async (req, res, next) => {
     next(err);
   }
 };
-
-// exports.getInvoice = async (req, res, next) => {
-//   const userId = req.userId;
-//   const invoiceId = req.params.invoiceId;
-//   try {
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       const err = new Error("no user found");
-//       err.status = 404;
-//       return next(err);
-//     }
-//     if (user._id.toString() !== userId.toString()) {
-//       const error = new Error("not authorized");
-//       error.status = 403;
-//       return next(error);
-//     }
-//     const invoice = await Invoice.findOne({userId:userId});
-//     if (!invoice) {
-//       const err = new Error("no invoice found");
-//       err.status = 404;
-//       return next(err);
-//     }
-//     res.status(200).json({
-//       message: "the invoice",
-//       invoice: invoice.invoiceUrl,
-//     });
-//   } catch (err) {
-//     if (!err.status) {
-//       err.status = 500;
-//     }
-//     next(err);
-//   }
-// };
