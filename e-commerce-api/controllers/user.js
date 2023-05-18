@@ -700,13 +700,6 @@ exports.addRating = async (req, res, next) => {
       });
 
       await newRate.save();
-      const user = await User.findById(userId);
-      if (!user) {
-        const err = new Error("no user found");
-        err.status = 404;
-        return next(err);
-      }
-
       user.rateIds.items.push({ rateId: newRate.id });
       await user.save();
 
