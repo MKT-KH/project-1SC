@@ -487,13 +487,34 @@ exports.ChangeEtatUser = async (req, res, next) => {
       error.status = 404;
       return next(error);
     }
-    user.Blacklisted = userEtat;
-    await user.save();
-    res.status(200).json({
-      message: "the etat for user is updated",
-      etat: user.Blacklisted,
-      user: user,
-    });
+
+    if (userEtat === "true") {
+      if (user.Blacklisted === false) {
+        user.Blacklisted = userEtat;
+        await user.save();
+        return res.status(200).json({
+          message: "the user is blocked",
+          user: user,
+        });
+      } else {
+        const err = new Error("the user is already blocked");
+        err.status = 409;
+        return next(err);
+      }
+    } else if (userEtat === "false") {
+      if (user.Blacklisted === true) {
+        user.Blacklisted = userEtat;
+        await user.save();
+        return res.status(200).json({
+          message: "the user is deblocked",
+          user: user,
+        });
+      } else {
+        const err = new Error("the user is already deblocked");
+        err.status = 409;
+        return next(err);
+      }
+    }
   } catch (err) {
     if (!err.status) {
       err.status = 500;

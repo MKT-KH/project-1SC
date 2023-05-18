@@ -36,6 +36,7 @@ const UserSchema = new Schema({
   Blacklisted: {
     type: Boolean,
     default: false,
+    required: true,
   },
   cartId: {
     type: Schema.Types.ObjectId,
