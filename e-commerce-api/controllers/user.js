@@ -995,6 +995,11 @@ exports.createInvoice = async (req, res, next) => {
     const headerFontSize = 18;
     const subheaderFontSize = 14;
 
+    let companyLogo = "./images/techmate-logo.png";
+
+    doc.image(companyLogo, 50, 50, { width: 150, height: 150 });
+    doc.moveDown();
+
     doc
       .font("Helvetica-Bold")
       .fontSize(headerFontSize)
@@ -1013,22 +1018,28 @@ exports.createInvoice = async (req, res, next) => {
       second: "numeric",
     });
 
-    doc.text("Customer :  " + order.userId.name, { align: "left" });
-    doc.text("Date     :  " + formattedDate, { align: "left" });
-    doc.text("Order Status :  " + order.orderstatus, { align: "left" });
+    doc.text("Customer     :  " + order.userId.name, { align: "left" });
+    doc.text("Date         :  " + formattedDate, { align: "left" });
+    doc.text("Status       :  " + order.orderstatus, { align: "left" });
     doc.moveDown();
 
+    // doc.font("Helvetica-Bold");
+    // doc.text("PRODUCT", 110, 256, { width: 190 });
+    // doc.text("QUANTITY", 300, 256, { width: 100 });
+    // doc.text("PRICE", 400, 256, { width: 100 });
+    // doc.text("TOTAL PRICE", 500, 256, { width: 100 });
+    // doc.font("Helvetica");
     doc.font("Helvetica-Bold");
-    doc.text("PRODUCT", 110, 256, { width: 190 });
-    doc.text("QUANTITY", 300, 256, { width: 100 });
-    doc.text("PRICE", 400, 256, { width: 100 });
-    doc.text("TOTAL PRICE", 500, 256, { width: 100 });
+    doc.text("PRODUCT", 110, 400, { width: 190 });
+    doc.text("QUANTITY", 300, 400, { width: 100 });
+    doc.text("PRICE", 400, 400, { width: 100 });
+    doc.text("TOTAL PRICE", 500, 400, { width: 100 });
     doc.font("Helvetica");
 
     let productNo = 1;
     const products = order.products;
     for (const product of products) {
-      let y = 256 + productNo * 20;
+      let y = 400 + productNo * 20;
       const productDatabase = await Product.findById(product.productId);
       doc.text(productDatabase.name, 110, y, { width: 190 });
       doc.text(product.quantity, 300, y, { width: 100 });

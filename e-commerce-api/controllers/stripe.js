@@ -6,7 +6,6 @@ const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 
 exports.createCheckoutSession = async (req, res, next) => {
   const userID = req.userId;
-  // const orderAddress = req.body.orderAddress ;
   const stripeitem = [];
   const user = await User.findById(userID);
   const cart = await Cart.findById(user.cartId);
@@ -18,12 +17,18 @@ exports.createCheckoutSession = async (req, res, next) => {
       customer_id: userID,
       registration_date: new Date(),
     },
+    shipping: {
+      name: user.name,
+      address: {
+        line1: req.body.address,
+      },
+    },
   });
-  // console.log(customer.metadata.customer_id);
 
   const getStripeItems = async (cb) => {
     for (const item of cart.items) {
       let storeItem = await Product.findById(item.productId);
+
       stripeitem.push({
         price_data: {
           currency: "usd",
@@ -51,7 +56,7 @@ exports.createCheckoutSession = async (req, res, next) => {
         cancel_url: "http://localhost:3000/",
       });
 
-      res.status(200).json({ url: session.url });
+      res.json({ url: session.url });
     } catch (e) {
       res.status(500).json({ error: e.message });
     }

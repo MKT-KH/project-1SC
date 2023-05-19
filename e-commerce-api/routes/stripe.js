@@ -2,12 +2,12 @@ const express = require("express");
 const User = require("../models/user");
 const Order = require("../models/order");
 const Cart = require("../models/cart");
-const isAuth = require("../middleware/is-auth");
 const stripeControllers = require("../controllers/stripe");
 const router = express.Router();
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const bodyParser = require("body-parser");
-const postOrder = async (userID) => {
+const isAuth = require("../middleware/is-auth");
+const postOrder = async (userID, addressShipping) => {
   const userId = userID;
   try {
     const user = await User.findById(userId);
@@ -30,16 +30,13 @@ const postOrder = async (userID) => {
       products: products,
       userId: userId,
       orderDate: new Date(),
+      orderAdress: addressShipping,
     });
     await order.save();
     cart.items = [];
-    user.orderIds.items.push(order.id);
+    user.orderIds.items.push(order._id);
     await user.save();
     await cart.save();
-    // res.status(201).json({
-    //   message: "order create succsuflyy",
-    //   order: order,
-    // });
   } catch (err) {
     if (!err.status) {
       err.status = 500;
@@ -78,7 +75,10 @@ router.post(
 
         const customer = await stripe.customers.retrieve(session.customer);
         // Then define and call a function to handle the event payment_intent.succeeded
-        postOrder(customer.metadata.customer_id);
+        postOrder(
+          customer.metadata.customer_id,
+          customer.shipping.address.line1
+        );
 
         break;
       // ... handle other event types
