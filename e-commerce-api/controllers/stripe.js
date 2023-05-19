@@ -22,7 +22,6 @@ exports.createCheckoutSession = async (req, res, next) => {
   // console.log(customer.metadata.customer_id);
 
   const getStripeItems = async (cb) => {
-    console.log(cart.items);
     for (const item of cart.items) {
       let storeItem = await Product.findById(item.productId);
       stripeitem.push({
