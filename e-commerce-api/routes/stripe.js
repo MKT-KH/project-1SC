@@ -77,7 +77,6 @@ router.post(
         const session = event.data.object;
 
         const customer = await stripe.customers.retrieve(session.customer);
-        console.log(customer);
         // Then define and call a function to handle the event payment_intent.succeeded
         postOrder(customer.metadata.customer_id);
 
