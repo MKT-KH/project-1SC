@@ -525,14 +525,48 @@ exports.ChangeEtatUser = async (req, res, next) => {
 
 exports.createAdmin = async (req, res, next) => {
   const userId = req.params.userId;
-  const adminRoles = req.body.adminRoles;
-
   try {
     await permission(req.userId, roleForSuperAdmin);
     const user = await User.findById(userId);
     if (!user) {
       const err = new Error("no user found");
       err.status = 404;
+      return next(err);
+    }
+    if (user.isAdmin === true) {
+      const err = new Error("this user is already admin");
+      err.status = 409;
+      return next(err);
+    }
+    user.isAdmin = true;
+    await user.save();
+
+    res.status(200).json({
+      message: "the admin is created succesflyy",
+      admin: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
+exports.addRolesForAdmin = async (req, res, next) => {
+  const userId = req.params.userId;
+  const adminRoles = req.body.adminRoles;
+  try {
+    await permission(req.userId, roleForSuperAdmin);
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user.isAdmin === false) {
+      const err = new Error("this user is not admin you cant roles");
+      err.status = 409;
       return next(err);
     }
     const roles = await Role.find({ userId: userId });
@@ -556,13 +590,11 @@ exports.createAdmin = async (req, res, next) => {
       });
 
       await role.save();
-      user.isAdmin = true;
       user.roleIds.items.push({ roleId: role.id });
       await user.save();
     }
-
-    res.status(200).json({
-      message: "the admin is created succesflyy",
+    res.status(201).json({
+      message: "the roles are add to this admin",
       admin: user,
     });
   } catch (err) {

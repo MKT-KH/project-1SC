@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
+const cors = require("cors");
 
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
@@ -19,6 +20,11 @@ const store = new MongoDBStore({
 });
 
 app.set("view engine", "ejs");
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(stripeRoutes);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

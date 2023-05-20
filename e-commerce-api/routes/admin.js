@@ -81,4 +81,11 @@ router.post(
   isAdmin,
   adminControllers.addDiscount
 );
+
+router.post(
+  "/add-admin-roles/:userId",
+  isAuth,
+  isAdmin,
+  adminControllers.addRolesForAdmin
+);
 module.exports = router;
