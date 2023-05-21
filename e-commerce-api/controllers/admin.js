@@ -553,6 +553,46 @@ exports.createAdmin = async (req, res, next) => {
   }
 };
 
+exports.deleteAdmin = async (req, res, next) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    if (user.isAdmin !== true) {
+      const err = new Error("this user is not admin");
+      err.status = 409;
+      return next(err);
+    }
+    user.isAdmin = false;
+    await user.save();
+    const roles = await Role.find({ userId: userId });
+    if (roles.length < 1) {
+      const err = new Error("no roles found");
+      err.status = 404;
+      return next(err);
+    }
+    const rolesUserIds = user.roleIds.items;
+    for (const role of rolesUserIds) {
+      await Role.findByIdAndDelete(role.roleId);
+    }
+    user.roleIds.items = [];
+    await user.save();
+    res.status(200).json({
+      message: "the admin is delted",
+      user: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
 exports.addRolesForAdmin = async (req, res, next) => {
   const userId = req.params.userId;
   const adminRoles = req.body.adminRoles;

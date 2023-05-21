@@ -5,6 +5,7 @@ const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcryptjs");
 const { validationResult } = require("express-validator/check");
 const PDFDocument = require("pdfkit");
+// const bwipjs = require("bwip-js");
 
 const Cart = require("../models/cart");
 const User = require("../models/user");
@@ -1020,15 +1021,9 @@ exports.createInvoice = async (req, res, next) => {
 
     doc.text("Customer     :  " + order.userId.name, { align: "left" });
     doc.text("Date         :  " + formattedDate, { align: "left" });
-    doc.text("Status       :  " + order.orderstatus, { align: "left" });
+    doc.text("Order id     :  " + order.id, { align: "left" });
     doc.moveDown();
 
-    // doc.font("Helvetica-Bold");
-    // doc.text("PRODUCT", 110, 256, { width: 190 });
-    // doc.text("QUANTITY", 300, 256, { width: 100 });
-    // doc.text("PRICE", 400, 256, { width: 100 });
-    // doc.text("TOTAL PRICE", 500, 256, { width: 100 });
-    // doc.font("Helvetica");
     doc.font("Helvetica-Bold");
     doc.text("PRODUCT", 110, 400, { width: 190 });
     doc.text("QUANTITY", 300, 400, { width: 100 });

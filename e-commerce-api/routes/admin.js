@@ -88,4 +88,10 @@ router.post(
   isAdmin,
   adminControllers.addRolesForAdmin
 );
+router.post(
+  "/deleteAdmin/:userId",
+  isAuth,
+  isAdmin,
+  adminControllers.deleteAdmin
+);
 module.exports = router;
