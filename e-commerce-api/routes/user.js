@@ -20,7 +20,7 @@ router.delete(
 router.put("/cart/:userId", isAuth, userControllers.updateCart);
 router.get("/cart", isAuth, userControllers.getCart);
 router.delete("/cart/:cartId", isAuth, userControllers.deleteCart);
-//router.post("/order", isAuth, userControllers.postorder);
+router.post("/order", isAuth, userControllers.postorder);
 //router.delete("/order/:orderId", isAuth, userControllers.delteOrder);
 router.post("/favorites/:productId", isAuth, userControllers.addToFavorites);
 router.get("/favorites", isAuth, userControllers.getFavorites);
