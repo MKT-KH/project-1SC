@@ -11,6 +11,11 @@
     "start:dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
   "author": "mokhtar",
   "license": "ISC",
   "dependencies": {
