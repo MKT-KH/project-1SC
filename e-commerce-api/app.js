@@ -8,15 +8,12 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const cors = require("cors");
 const helmet = require("helmet");
-const morgan = require("morgan");
 
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const userRoutes = require("./routes/user");
 const stripeRoutes = require("./routes/stripe");
-
-// const accessLogStream = fs.WriteStream(path.join(__dirname,'access.log'),{flags:"a"});
 
 const app = express();
 
@@ -27,7 +24,6 @@ const store = new MongoDBStore({
 
 app.set("view engine", "ejs");
 app.use(helmet());
-// app.use(morgan('combined',{stream:accessLogStream}));
 app.use(
   cors({
     origin: "*",
