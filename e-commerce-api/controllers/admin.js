@@ -748,6 +748,49 @@ exports.addDiscount = async (req, res, next) => {
   }
 };
 
+exports.deleteRoleForAdmin = async (req, res, next) => {
+  const userId = req.params.userId;
+  const roleDeleted = req.body.role;
+
+  try {
+    permission(req.userId, roleForSuperAdmin, roleForUsers);
+    const user = await User.findById(userId).populate("roleIds.items");
+    if (!user) {
+      const err = new Error("no user found");
+      err.status = 404;
+      return next(err);
+    }
+    const roles = await Role.find({ userId: userId });
+    if (roles.length < 1) {
+      const err = new Error("this admin have no roles");
+      err.status = 404;
+      return next(err);
+    }
+    const roleItems = user.roleIds.items;
+    for (const role of roles) {
+      if (role.role === roleDeleted) {
+        await Role.findByIdAndDelete(role.id);
+        const existRolesIndex = roleItems.findIndex((item) => {
+          return item.roleId.toString() === role.id;
+        });
+        if (existRolesIndex !== -1) {
+          user.roleIds.items.splice(existRolesIndex, 1);
+          await user.save();
+        }
+      }
+    }
+    res.status(200).json({
+      message: "the role is deleted",
+      user: user,
+    });
+  } catch (err) {
+    if (!err.status) {
+      err.status = 500;
+    }
+    next(err);
+  }
+};
+
 const permission = async (userId, ...roles) => {
   const rolesForAdmin = await Role.find({ userId: userId });
   const theRolesForAdmin = rolesForAdmin.map((item) => {

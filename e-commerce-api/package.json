@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "engines": {
+    "node": "16.20.0"
+  },
   "scripts": {
     "start": "node app.js",
     "start:dev": "nodemon app.js",
@@ -16,6 +19,7 @@
     "body-parser": "^1.20.2",
     "bwip-js": "^3.4.0",
     "cloudinary": "^1.35.0",
+    "compression": "^1.7.4",
     "connect-mongodb-session": "^3.1.1",
     "cookie-session": "^2.0.0",
     "cors": "^2.8.5",
@@ -24,6 +28,7 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "express-validator": "^6.15.0",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "mongoose": "^7.0.0",

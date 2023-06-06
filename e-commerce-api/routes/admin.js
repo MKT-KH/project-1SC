@@ -94,4 +94,10 @@ router.post(
   isAdmin,
   adminControllers.deleteAdmin
 );
+router.delete(
+  "/delete-role/:userId",
+  isAuth,
+  isAdmin,
+  adminControllers.deleteRoleForAdmin
+);
 module.exports = router;
