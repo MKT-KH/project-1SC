@@ -1068,9 +1068,10 @@ exports.createInvoice = async (req, res, next) => {
         },
         async (error, result) => {
           if (error) {
-            console.error("Error uploading invoice to Cloudinary:", error);
+            // console.error("Error uploading invoice to Cloudinary:", error);
+            return next(error);
           } else {
-            console.log("Invoice uploaded to Cloudinary:", result.url);
+            // console.log("Invoice uploaded to Cloudinary:", result.url);
             const newInvoice = new Invoice({
               userId: userId,
               invoiceUrl: result.url,
