@@ -53,69 +53,75 @@ exports.signUp = async (req, res, next) => {
       address: address,
     });
     await user.save();
+    // transport.sendMail({
+    //   to: user.email,
+    //   from: process.env.SENDER_EMAIL,
+    //   subject: "Please Verify Your Account",
+    //   html: `
+    //     <html>
+    //       <head>
+    //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    //         <style>
+
+    //           body {
+    //             background-color: #f6f6f6;
+    //             font-family: Arial, sans-serif;
+    //             font-size: 16px;
+    //             line-height: 1.4;
+    //             color: #444444;
+    //             margin: 0;
+    //             padding: 0;
+    //           }
+    //           .container {
+    //             max-width: 600px;
+    //             margin: 0 auto;
+    //             padding: 20px;
+    //             background-color: #ffffff;
+    //           }
+    //           h1 {
+    //             color: #333333;
+    //             font-size: 28px;
+    //             font-weight: bold;
+    //             margin-top: 0;
+    //             margin-bottom: 20px;
+    //           }
+    //           p {
+    //             margin-bottom: 20px;
+    //           }
+    //           .center {
+    //             text-align: center;
+    //           }
+    //           a {
+    //             display: inline-block;
+    //             background-color: #007bff;
+    //             color: #ffffff;
+    //             font-size: 16px;
+    //             font-weight: bold;
+    //             text-decoration: none;
+    //             padding: 12px 24px;
+    //             border-radius: 4px;
+    //           }
+    //           a:hover {
+    //             background-color: #0062cc;
+    //           }
+    //         </style>
+    //       </head>
+    //       <body>
+    //         <div class="container">
+    //           <h1>Verify Your Account</h1>
+    //           <p>Thank you for signing up! To activate your account and start using our services, please click the button below to verify your email address.</p>
+    //           <p class="center"><a href="http://localhost:3001/auth/verify/${user._id}">Verify Account</a></p>
+    //           <p>If you didn't create an account with us, please ignore this message.</p>
+    //         </div>
+    //       </body>
+    //     </html>
+    //   `,
+    // });
     transport.sendMail({
       to: user.email,
       from: process.env.SENDER_EMAIL,
       subject: "Please Verify Your Account",
-      html: `
-        <html>
-          <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-
-              body {
-                background-color: #f6f6f6;
-                font-family: Arial, sans-serif;
-                font-size: 16px;
-                line-height: 1.4;
-                color: #444444;
-                margin: 0;
-                padding: 0;
-              }
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #ffffff;
-              }
-              h1 {
-                color: #333333;
-                font-size: 28px;
-                font-weight: bold;
-                margin-top: 0;
-                margin-bottom: 20px;
-              }
-              p {
-                margin-bottom: 20px;
-              }
-              .center {
-                text-align: center;
-              }
-              a {
-                display: inline-block;
-                background-color: #007bff;
-                color: #ffffff;
-                font-size: 16px;
-                font-weight: bold;
-                text-decoration: none;
-                padding: 12px 24px;
-                border-radius: 4px;
-              }
-              a:hover {
-                background-color: #0062cc;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Verify Your Account</h1>
-              <p>Thank you for signing up! To activate your account and start using our services, please click the button below to verify your email address.</p>
-              <p class="center"><a href="http://localhost:3001/auth/verify/${user._id}">Verify Account</a></p>
-              <p>If you didn't create an account with us, please ignore this message.</p>
-            </div>
-          </body>
-        </html>
-      `,
+      html: `<a href="http://localhost:3001/auth/verify/${user._id}">Verify Account</a>`,
     });
 
     res.status(201).json({
@@ -142,8 +148,7 @@ exports.verifyEmail = async (req, res, next) => {
     user.verify = true;
     await user.save();
     res.status(200).json({
-      message: "the account is activated",
-      userId: userId,
+      message: "your account is activated",
     });
   } catch (err) {
     if (!err.status) {
