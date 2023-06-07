@@ -452,6 +452,7 @@ exports.updateCart = async (req, res, next) => {
 
 exports.postorder = async (req, res, next) => {
   const userId = req.userId;
+  const orderAdress = req.body.orderAdress;
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -478,6 +479,7 @@ exports.postorder = async (req, res, next) => {
       products: products,
       userId: userId,
       orderDate: new Date(),
+      orderAdress: orderAdress,
     });
     await order.save();
     cart.items = [];

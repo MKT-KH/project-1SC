@@ -34,7 +34,7 @@ const postOrder = async (userID, addressShipping) => {
     });
     await order.save();
     cart.items = [];
-    user.orderIds.items.push(order._id);
+    user.orderIds.items.push(order.id);
     await user.save();
     await cart.save();
   } catch (err) {
