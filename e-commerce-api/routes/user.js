@@ -37,7 +37,7 @@ router.post(
   "/comment/:productId",
   [
     body("comment")
-      .isLength({ min: 5, max: 25 })
+      .isLength({ min: 5, max: 100 })
       .withMessage("Sorry, it looks like your comment is too long"),
   ],
   isAuth,

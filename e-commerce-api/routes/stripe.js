@@ -31,6 +31,7 @@ const postOrder = async (userID, addressShipping) => {
       userId: userId,
       orderDate: new Date(),
       orderAdress: addressShipping,
+      orderPayer: true,
     });
     await order.save();
     cart.items = [];

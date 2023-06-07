@@ -32,6 +32,11 @@ const orderSchema = new Schema({
     type: String,
     required: true,
   },
+  orderPayer: {
+    type: String,
+    required: true,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Order", orderSchema);

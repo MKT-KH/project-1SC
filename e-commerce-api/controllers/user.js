@@ -480,6 +480,7 @@ exports.postorder = async (req, res, next) => {
       userId: userId,
       orderDate: new Date(),
       orderAdress: orderAdress,
+      orderPayer: false,
     });
     await order.save();
     cart.items = [];
